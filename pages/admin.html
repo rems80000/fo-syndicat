@@ -45,56 +45,61 @@
     <main class="dashboard-main">
       <!-- DASHBOARD -->
       <div id="section-dashboard">
-        <h1 class="dashboard-title">Tableau de bord</h1>
-        <p class="dashboard-subtitle">Vue d'ensemble de la section FO Métaux Valeo Amiens</p>
-
-        <div class="cards-row">
-          <div class="info-card">
-            <div class="info-card-label">Adhérents actifs</div>
-            <div class="info-card-value">87</div>
-            <div class="info-card-sub">+3 ce mois-ci</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:4px;">
+          <div>
+            <h1 class="dashboard-title" style="margin-bottom:2px;">Tableau de bord <span id="dashAnneeLabel" style="color:#cc0000;font-size:1.2rem;"></span></h1>
+            <p class="dashboard-subtitle" style="margin:0;">Données issues de la dernière extraction bancaire disponible</p>
           </div>
-          <div class="info-card">
-            <div class="info-card-label">À jour cotisations</div>
-            <div class="info-card-value">79</div>
-            <div class="info-card-sub"><span class="badge badge-green">91%</span></div>
-          </div>
-          <div class="info-card">
-            <div class="info-card-label">En retard</div>
-            <div class="info-card-value">8</div>
-            <div class="info-card-sub"><span class="badge badge-orange">9%</span></div>
-          </div>
-          <div class="info-card">
-            <div class="info-card-label">Recettes 2024</div>
-            <div class="info-card-value">8 554 €</div>
-            <div class="info-card-sub">sur 4 mois</div>
+          <div id="lastImportBadge" style="font-size:.78rem;padding:6px 12px;background:#f0f0f0;border-radius:20px;color:#666;">
+            <i class="fas fa-database"></i> Aucune extraction bancaire chargée
           </div>
         </div>
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+        <!-- KPI en temps réel -->
+        <div class="cards-row" id="dashKPI" style="margin-top:20px;">
+          <div class="info-card" id="kpiActifs">
+            <div class="info-card-label">Adhérents actifs</div>
+            <div class="info-card-value" id="kpiActifsVal">—</div>
+            <div class="info-card-sub">Source : base Excel</div>
+          </div>
+          <div class="info-card" style="border-top-color:#28a745;" id="kpiAJour">
+            <div class="info-card-label">À jour (cotisation soldée)</div>
+            <div class="info-card-value" style="color:#28a745;" id="kpiAJourVal">—</div>
+            <div class="info-card-sub" id="kpiAJourPct"></div>
+          </div>
+          <div class="info-card" style="border-top-color:#f0ad4e;">
+            <div class="info-card-label">Paiement partiel / en retard</div>
+            <div class="info-card-value" style="color:#f0ad4e;" id="kpiRetardVal">—</div>
+            <div class="info-card-sub" id="kpiRetardPct"></div>
+          </div>
+          <div class="info-card" style="border-top-color:#007bff;">
+            <div class="info-card-label" id="kpiRecettesLabel">Recettes encaissées</div>
+            <div class="info-card-value" style="color:#007bff;" id="kpiRecettesVal">—</div>
+            <div class="info-card-sub" id="kpiRecettesSub">Source : extraction bancaire</div>
+          </div>
+        </div>
+
+        <!-- Grille basse : progression mensuelle + alertes retard -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:20px;">
           <div class="panel">
-            <div class="panel-title"><i class="fas fa-chart-pie"></i> Taux d'adhésion</div>
-            <div style="text-align:center;padding:20px 0;">
-              <div style="font-size:3.5rem;font-weight:900;color:#cc0000;">91%</div>
-              <p style="color:#666;font-size:.9rem;">des salariés éligibles sont adhérents FO</p>
-              <div class="progress-bar-wrap" style="margin-top:16px;">
-                <div class="progress-bar" style="width:91%;"></div>
-              </div>
+            <div class="panel-title" style="justify-content:space-between;">
+              <span><i class="fas fa-chart-bar"></i> Progression mensuelle <span id="dashAnnee2"></span></span>
             </div>
+            <div id="dashMonthsGrid" style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:8px;"></div>
           </div>
           <div class="panel">
-            <div class="panel-title"><i class="fas fa-bell"></i> Alertes</div>
-            <div style="display:flex;flex-direction:column;gap:12px;">
-              <div style="padding:12px;background:#fff3cd;border-radius:8px;border-left:4px solid #ffc107;font-size:.88rem;">
-                <strong>8 adhérents</strong> n'ont pas réglé leurs cotisations d'avril.
-              </div>
-              <div style="padding:12px;background:#d4edda;border-radius:8px;border-left:4px solid #28a745;font-size:.88rem;">
-                AG du 15 mai : <strong>42 confirmations</strong> reçues sur 87 invitations.
-              </div>
-              <div style="padding:12px;background:#f8d7da;border-radius:8px;border-left:4px solid #dc3545;font-size:.88rem;">
-                Renouvellement statuts <strong>dû avant le 1er juin</strong>.
-              </div>
+            <div class="panel-title"><i class="fas fa-exclamation-triangle" style="color:#f0ad4e;"></i> Adhérents avec solde restant</div>
+            <div id="dashAlertes" style="display:flex;flex-direction:column;gap:8px;max-height:260px;overflow-y:auto;">
+              <p style="color:#aaa;font-size:.88rem;padding:12px;">Chargement…</p>
             </div>
+          </div>
+        </div>
+
+        <!-- Historique des imports -->
+        <div class="panel" style="margin-top:20px;">
+          <div class="panel-title"><i class="fas fa-history"></i> Historique des extractions bancaires (3 dernières)</div>
+          <div id="dashImportHistory">
+            <p style="color:#aaa;font-size:.88rem;padding:12px;">Aucune extraction importée. Le trésorier doit importer un relevé Crédit Agricole.</p>
           </div>
         </div>
       </div>
@@ -338,106 +343,284 @@
     </main>
   </div>
 
+  <script src="../js/treasury-data.js"></script>
   <script src="../js/auth.js"></script>
   <script>
-    const user = Auth.requireAuth(['admin']);
+    const user = Auth.requireAuth(['admin', 'secretaire']);
+    const ANNEE_COURANTE = '2026';
+    const API = 'https://fo-syndicat-backend-production.up.railway.app';
+
     if (user) {
       document.getElementById('sidebarName').textContent = user.name;
-      document.getElementById('avatarInitials').textContent = user.name.split(' ').map(n=>n[0]).join('');
+      document.getElementById('avatarInitials').textContent =
+        user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+      if (user.role === 'secretaire') {
+        const roleEl = document.querySelector('.sidebar-user-role');
+        if (roleEl) roleEl.innerHTML = '<i class="fas fa-pen" style="font-size:.6rem;"></i> Secrétaire';
+        const avatarEl = document.getElementById('avatarInitials');
+        if (avatarEl) { avatarEl.style.background = '#007bff'; avatarEl.style.color = '#fff'; }
+        const headerBadge = document.querySelector('.header-actions span');
+        if (headerBadge) headerBadge.innerHTML = '<i class="fas fa-pen"></i> Secrétariat';
+      }
     }
 
     function showSection(id) {
       document.querySelectorAll('.dashboard-main > div').forEach(d => d.style.display = 'none');
-      document.getElementById('section-'+id).style.display = 'block';
+      document.getElementById('section-' + id).style.display = 'block';
       document.querySelectorAll('.sidebar-nav-item').forEach(i => i.classList.remove('active'));
       event.currentTarget.classList.add('active');
-      if (id === 'adherents') loadAdherents();
+      if (id === 'dashboard')   loadDashboard();
+      if (id === 'adherents')   loadAdherents();
       if (id === 'cotisations') loadCotisations();
     }
 
-    // Adhérents issus des bulletins d'adhésion (Google Drive)
-    const ADHERENTS = [
-      { mat:'V-001', nom:'ABLAIN',    prenom:'Dominique', service:'Production',   statut:'payé',   depuis:'2024' },
-      { mat:'V-002', nom:'BEGUIN',    prenom:'Allan',      service:'Fabrication',  statut:'payé',   depuis:'2022' },
-      { mat:'V-003', nom:'BOBER',     prenom:'Deborah',    service:'Logistique',   statut:'payé',   depuis:'2024' },
-      { mat:'V-004', nom:'BONARD',    prenom:'Pascal',     service:'Maintenance',  statut:'retard', depuis:'2024' },
-      { mat:'V-005', nom:'CARPENTIER',prenom:'T.',         service:'Qualité',      statut:'payé',   depuis:'2023' },
-      { mat:'V-006', nom:'CAUMARTIN', prenom:'L.',         service:'Production',   statut:'payé',   depuis:'2022' },
-      { mat:'V-007', nom:'CROGNIER',  prenom:'D.',         service:'Fabrication',  statut:'payé',   depuis:'2022' },
-      { mat:'V-008', nom:'DEHESDIN',  prenom:'A.',         service:'Maintenance',  statut:'payé',   depuis:'2023' },
-      { mat:'V-009', nom:'DERCOURT',  prenom:'—',          service:'Production',   statut:'payé',   depuis:'2024' },
-      { mat:'V-010', nom:'DOGMONT',   prenom:'—',          service:'Logistique',   statut:'payé',   depuis:'2024' },
-      { mat:'V-011', nom:'DOS SANTOS',prenom:'C.',         service:'Fabrication',  statut:'payé',   depuis:'2023' },
-      { mat:'V-012', nom:'DUMONT',    prenom:'B.',         service:'Qualité',      statut:'payé',   depuis:'2023' },
-      { mat:'V-013', nom:'DUPAYS',    prenom:'C.',         service:'Maintenance',  statut:'payé',   depuis:'2023' },
-      { mat:'V-014', nom:'FERREIRA',  prenom:'Philippe',   service:'Production',   statut:'payé',   depuis:'2023' },
-      { mat:'V-015', nom:'FIOLET',    prenom:'S.',         service:'RH',           statut:'payé',   depuis:'2023' },
-      { mat:'V-016', nom:'FONTAINE',  prenom:'J.B.',       service:'Fabrication',  statut:'payé',   depuis:'2024' },
-      { mat:'V-017', nom:'LANGLET',   prenom:'—',          service:'Logistique',   statut:'payé',   depuis:'2024' },
-      { mat:'V-018', nom:'LEFEVRE',   prenom:'R.',         service:'Production',   statut:'payé',   depuis:'2023' },
-      { mat:'V-019', nom:'LEMOINE',   prenom:'M.',         service:'Maintenance',  statut:'payé',   depuis:'2023' },
-      { mat:'V-020', nom:'LOURDEL',   prenom:'Benoit',     service:'Qualité',      statut:'payé',   depuis:'2024' },
-      { mat:'V-021', nom:'PREVOT',    prenom:'—',          service:'Fabrication',  statut:'payé',   depuis:'2024' },
-      { mat:'V-022', nom:'PRINGARBE', prenom:'S.',         service:'Production',   statut:'payé',   depuis:'2023' },
-      { mat:'V-023', nom:'ROBILLARD', prenom:'Lindsay',    service:'RH',           statut:'payé',   depuis:'2023' },
-      { mat:'V-024', nom:'ROUILLARD', prenom:'C.',         service:'Logistique',   statut:'payé',   depuis:'2023' },
-      { mat:'V-025', nom:'SAUVE',     prenom:'Jérémie',    service:'Fabrication',  statut:'payé',   depuis:'2025' },
-      { mat:'V-026', nom:'SOUILLARD', prenom:'—',          service:'Production',   statut:'retard', depuis:'2024' },
-      { mat:'V-027', nom:'TANCHON',   prenom:'D.',         service:'Maintenance',  statut:'payé',   depuis:'2023' },
-      { mat:'V-028', nom:'TEIXEIRA',  prenom:'O.',         service:'Qualité',      statut:'payé',   depuis:'2023' },
-      { mat:'V-029', nom:'THIERY',    prenom:'S.',         service:'Fabrication',  statut:'payé',   depuis:'2023' },
-    ];
+    // ── Accès aux données depuis treasury-data.js ──
+    function getAdherentsData(annee) {
+      if (typeof TREASURY_DATA !== 'undefined' && TREASURY_DATA.adherents && TREASURY_DATA.adherents[annee]) {
+        return TREASURY_DATA.adherents[annee];
+      }
+      return [];
+    }
 
-    function loadAdherents(filter='') {
-      const list = filter ? ADHERENTS.filter(a => (a.nom+a.prenom+a.mat+a.service).toLowerCase().includes(filter.toLowerCase())) : ADHERENTS;
-      document.getElementById('adherentsBody').innerHTML = list.map(a => `
-        <tr>
-          <td><code>${a.mat}</code></td>
-          <td>${a.nom}</td>
-          <td>${a.prenom}</td>
-          <td>${a.service}</td>
-          <td><span class="badge ${a.statut==='payé'?'badge-green':'badge-orange'}">${a.statut==='payé'?'À jour':'En retard'}</span></td>
-          <td>${a.depuis}</td>
+    // ═══════════════════════════════════════════
+    // TABLEAU DE BORD
+    // ═══════════════════════════════════════════
+    async function loadDashboard() {
+      document.getElementById('dashAnneeLabel').textContent = ANNEE_COURANTE;
+      const dashAnnee2 = document.getElementById('dashAnnee2');
+      if (dashAnnee2) dashAnnee2.textContent = ANNEE_COURANTE;
+
+      // Données statiques Excel
+      const adherents = getAdherentsData(parseInt(ANNEE_COURANTE));
+      const actifs    = adherents.filter(a => a.actif);
+      const ajour     = actifs.filter(a => (a.resteAPayer || 0) <= 0);
+      const retard    = actifs.filter(a => (a.resteAPayer || 0) > 0);
+
+      document.getElementById('kpiActifsVal').textContent = actifs.length || '—';
+
+      if (actifs.length) {
+        document.getElementById('kpiAJourVal').textContent  = ajour.length;
+        document.getElementById('kpiAJourPct').textContent  = `${Math.round(ajour.length / actifs.length * 100)}% des actifs`;
+        document.getElementById('kpiRetardVal').textContent = retard.length;
+        document.getElementById('kpiRetardPct').textContent = `${Math.round(retard.length / actifs.length * 100)}% des actifs`;
+      }
+
+      // Alertes retard (Excel)
+      buildAlertes(retard);
+
+      // Données bancaires (API)
+      try {
+        const token = Auth.getToken();
+        const res = await fetch(`${API}/api/treasury/consolidated?annee=${ANNEE_COURANTE}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        // Badge dernier import
+        if (data.lastImport) {
+          const d = new Date(data.lastImport.importedAt).toLocaleDateString('fr-FR',
+            { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+          const badge = document.getElementById('lastImportBadge');
+          badge.innerHTML = `<i class="fas fa-database" style="color:#28a745;"></i> Dernière extraction : <strong>${d}</strong> — <em>${data.lastImport.filename}</em>`;
+          badge.style.background = '#d4edda';
+          badge.style.color = '#155724';
+        } else {
+          document.getElementById('lastImportBadge').innerHTML =
+            '<i class="fas fa-exclamation-circle" style="color:#f0ad4e;"></i> Aucune extraction bancaire importée';
+        }
+
+        // Recettes (banque)
+        const recettes = parseFloat((data.stats || {}).totalCreditAnnee || 0);
+        document.getElementById('kpiRecettesVal').textContent =
+          recettes.toLocaleString('fr-FR', { minimumFractionDigits: 2 }) + ' €';
+        document.getElementById('kpiRecettesSub').textContent = `Crédits bancaires ${ANNEE_COURANTE}`;
+
+        // Si pas de données Excel, utiliser stats bancaires pour à-jour/retard
+        if (!actifs.length) {
+          const s = data.stats || {};
+          document.getElementById('kpiAJourVal').textContent  = s.valide   || '—';
+          document.getElementById('kpiRetardVal').textContent = s.aValider || '—';
+        }
+
+        buildMonthsGrid(data.operations || [], ANNEE_COURANTE);
+        buildImportHistory(data.history || []);
+
+      } catch (e) {
+        console.warn('API non disponible — données Excel uniquement :', e.message);
+        const badge = document.getElementById('lastImportBadge');
+        badge.innerHTML = '<i class="fas fa-wifi" style="color:#dc3545;margin-right:4px;"></i> Serveur non disponible — données Excel uniquement';
+        badge.style.background = '#fff3cd'; badge.style.color = '#856404';
+        document.getElementById('kpiRecettesVal').textContent = '—';
+        document.getElementById('kpiRecettesSub').textContent = 'Serveur non joignable';
+        document.getElementById('dashMonthsGrid').innerHTML =
+          '<p style="color:#aaa;font-size:.85rem;grid-column:1/-1;padding:12px 0;">Données bancaires non disponibles.</p>';
+        document.getElementById('dashImportHistory').innerHTML =
+          '<p style="color:#aaa;font-size:.88rem;padding:12px;">Serveur non disponible ou aucun import effectué.</p>';
+      }
+    }
+
+    function buildMonthsGrid(ops, annee) {
+      const MOIS = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
+      const totals = Array(12).fill(0);
+      ops.forEach(op => {
+        if (op.date && op.date.startsWith(annee) && op.credit > 0) {
+          const m = parseInt(op.date.substring(5, 7), 10) - 1;
+          if (m >= 0 && m < 12) totals[m] += op.credit;
+        }
+      });
+      const max = Math.max(...totals, 1);
+      document.getElementById('dashMonthsGrid').innerHTML = MOIS.map((m, i) => {
+        const hasData = totals[i] > 0;
+        const pct     = Math.round(totals[i] / max * 100);
+        return `<div style="text-align:center;padding:10px 4px;background:${hasData?'#d4edda':'#f8f9fa'};border-radius:8px;position:relative;overflow:hidden;">
+          <div style="position:absolute;bottom:0;left:0;right:0;height:${pct}%;background:${hasData?'rgba(40,167,69,.15)':'transparent'};"></div>
+          <div style="font-size:.72rem;font-weight:700;color:${hasData?'#155724':'#aaa'};position:relative;">${m}</div>
+          <div style="font-size:.68rem;color:${hasData?'#155724':'#aaa'};position:relative;margin-top:2px;">${hasData ? totals[i].toLocaleString('fr-FR',{maximumFractionDigits:0})+' €' : '—'}</div>
+        </div>`;
+      }).join('');
+    }
+
+    function buildAlertes(retard) {
+      const el = document.getElementById('dashAlertes');
+      if (!retard.length) {
+        el.innerHTML = '<p style="color:#28a745;font-size:.88rem;padding:12px 0;"><i class="fas fa-check-circle"></i> Tous les adhérents actifs sont à jour !</p>';
+        return;
+      }
+      const shown = retard.slice(0, 15);
+      el.innerHTML = shown.map(a => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:#fff8f0;border-radius:6px;border-left:3px solid #f0ad4e;">
+          <span style="font-size:.84rem;font-weight:600;">${a.prenom || ''} ${a.nom || ''}</span>
+          <span style="font-size:.82rem;color:#e67e00;font-weight:700;">${(a.resteAPayer||0).toLocaleString('fr-FR',{minimumFractionDigits:2})} € restant</span>
+        </div>`).join('') +
+        (retard.length > 15 ? `<p style="text-align:center;font-size:.8rem;color:#aaa;padding:4px 0;">… et ${retard.length - 15} autre(s)</p>` : '');
+    }
+
+    function buildImportHistory(history) {
+      const el = document.getElementById('dashImportHistory');
+      if (!history.length) {
+        el.innerHTML = '<p style="color:#aaa;font-size:.88rem;padding:12px;">Aucune extraction importée. Le trésorier doit importer un relevé Crédit Agricole.</p>';
+        return;
+      }
+      el.innerHTML = `<table style="width:100%;font-size:.84rem;border-collapse:collapse;">
+        <thead><tr style="border-bottom:2px solid #eee;color:#666;">
+          <th style="text-align:left;padding:8px 6px;">Date d'import</th>
+          <th style="text-align:left;padding:8px 6px;">Fichier</th>
+          <th style="text-align:center;padding:8px 6px;">Année</th>
+          <th style="text-align:center;padding:8px 6px;">Opérations</th>
+        </tr></thead>
+        <tbody>${history.map((h, i) => {
+          const d = new Date(h.importedAt).toLocaleDateString('fr-FR',
+            { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+          return `<tr style="border-bottom:1px solid #f0f0f0;${i===0?'font-weight:600;background:#f9fff9;':''}">
+            <td style="padding:8px 6px;">${d}</td>
+            <td style="padding:8px 6px;"><i class="fas fa-file-csv" style="color:#28a745;margin-right:6px;"></i>${h.filename}</td>
+            <td style="text-align:center;padding:8px 6px;">${h.annee}</td>
+            <td style="text-align:center;padding:8px 6px;">${h.count}</td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table>`;
+    }
+
+    // ═══════════════════════════════════════════
+    // ADHÉRENTS
+    // ═══════════════════════════════════════════
+    function loadAdherents(filter = '') {
+      const raw = getAdherentsData(parseInt(ANNEE_COURANTE));
+      const list = raw.length ? raw : [];
+      const lf   = filter.toLowerCase();
+      const filtered = lf
+        ? list.filter(a => (a.nom + ' ' + (a.prenom||'') + ' ' + (a.college||'')).toLowerCase().includes(lf))
+        : list;
+
+      document.getElementById('adherentsBody').innerHTML = filtered.map((a, i) => {
+        const mat     = a.mat || `V-${String(i+1).padStart(3,'0')}`;
+        const statut  = (a.resteAPayer || 0) <= 0 ? 'payé' : 'retard';
+        const inactif = !a.actif;
+        return `<tr${inactif ? ' style="opacity:.55;"' : ''}>
+          <td><code>${mat}</code></td>
+          <td>${a.nom || ''}</td>
+          <td>${a.prenom || ''}</td>
+          <td>${a.college || '—'}</td>
+          <td>
+            <span class="badge ${statut==='payé'?'badge-green':'badge-orange'}">${statut==='payé'?'À jour':'En retard'}</span>
+            ${inactif ? '<span class="badge" style="background:#e9ecef;color:#666;margin-left:4px;">Inactif</span>' : ''}
+          </td>
+          <td>${a.dateEntree || '—'}</td>
           <td><button class="btn btn-sm btn-outline-red">Fiche</button></td>
-        </tr>`).join('');
+        </tr>`;
+      }).join('');
+
+      // Mise à jour compteur
+      const titleSpan = document.querySelector('#section-adherents .panel-title span');
+      if (titleSpan) titleSpan.innerHTML = `<i class="fas fa-users"></i> Adhérents (${filtered.length})`;
     }
 
     function filterTable(val) { loadAdherents(val); }
 
+    // ═══════════════════════════════════════════
+    // COTISATIONS
+    // ═══════════════════════════════════════════
     function loadCotisations() {
-      const months = ['Jan','Fév','Mar','Avr','Mai','Jun'];
-      const amounts = [2136, 2136, 2160, 2136, 0, 0];
-      document.getElementById('monthsGrid').innerHTML = months.map((m,i) => `
-        <div style="text-align:center;padding:16px;background:${amounts[i]?'#d4edda':'#f8d7da'};border-radius:8px;">
-          <div style="font-weight:700;">${m}</div>
-          <div style="font-size:.9rem;color:#555;">${amounts[i]?amounts[i]+' €':'—'}</div>
-        </div>`).join('');
+      const data  = getAdherentsData(parseInt(ANNEE_COURANTE));
+      const actifs = data.filter(a => a.actif);
+      const MOIS_LABELS = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
 
-      document.getElementById('cotisBody').innerHTML = ADHERENTS.map(a => `
-        <tr>
-          <td><code>${a.mat}</code></td>
-          <td>${a.nom} ${a.prenom}</td>
-          <td><span class="badge badge-green">✓</span></td>
-          <td><span class="badge badge-green">✓</span></td>
-          <td><span class="badge badge-green">✓</span></td>
-          <td><span class="badge ${a.statut==='payé'?'badge-green':'badge-orange'}">${a.statut==='payé'?'✓':'—'}</span></td>
-          <td>${a.statut==='payé'?'98,00 €':'73,50 €'}</td>
-          <td><span class="badge ${a.statut==='payé'?'badge-green':'badge-orange'}">${a.statut==='payé'?'À jour':'Retard'}</span></td>
-        </tr>`).join('');
+      // Grille mensuelle (totaux)
+      if (actifs.length) {
+        const totaux = Array(12).fill(0);
+        actifs.forEach(a => {
+          if (a.mois) a.mois.forEach((v, i) => { totaux[i] += v * 11.50; });
+        });
+        document.getElementById('monthsGrid').innerHTML = MOIS_LABELS.map((m, i) => `
+          <div style="text-align:center;padding:14px 6px;background:${totaux[i]?'#d4edda':'#f8f9fa'};border-radius:8px;">
+            <div style="font-weight:700;font-size:.85rem;">${m}</div>
+            <div style="font-size:.82rem;color:#555;">${totaux[i]?totaux[i].toLocaleString('fr-FR',{minimumFractionDigits:2})+' €':'—'}</div>
+          </div>`).join('');
+      } else {
+        document.getElementById('monthsGrid').innerHTML = MOIS_LABELS.slice(0, 6).map(m => `
+          <div style="text-align:center;padding:14px 6px;background:#f8f9fa;border-radius:8px;">
+            <div style="font-weight:700;font-size:.85rem;">${m}</div><div style="font-size:.82rem;color:#aaa;">—</div>
+          </div>`).join('');
+      }
+
+      // Tableau détail
+      document.getElementById('cotisBody').innerHTML = actifs.map(a => {
+        const mois   = a.mois || Array(12).fill(0);
+        const statut = (a.resteAPayer || 0) <= 0 ? 'payé' : 'retard';
+        const mat    = a.mat || '—';
+        return `<tr>
+          <td><code>${mat}</code></td>
+          <td>${a.nom || ''} ${a.prenom || ''}</td>
+          ${mois.slice(0, 4).map(v => `<td><span class="badge ${v ? 'badge-green' : 'badge-orange'}">${v ? '✓' : '—'}</span></td>`).join('')}
+          <td>${(a.totalRecu || 0).toLocaleString('fr-FR', {minimumFractionDigits:2})} €</td>
+          <td><span class="badge ${statut==='payé'?'badge-green':'badge-orange'}">${statut==='payé'?'À jour':'Retard'}</span></td>
+        </tr>`;
+      }).join('');
     }
 
     function exportCSV() {
-      const rows = [['Matricule','Nom','Prénom','Service','Statut','Depuis'],...ADHERENTS.map(a=>[a.mat,a.nom,a.prenom,a.service,a.statut,a.depuis])];
-      const csv = rows.map(r=>r.join(';')).join('\n');
-      const a = document.createElement('a');
-      a.href = 'data:text/csv;charset=utf-8,﻿'+encodeURIComponent(csv);
-      a.download = 'adherents_fo_valeo.csv';
-      a.click();
+      const data = getAdherentsData(parseInt(ANNEE_COURANTE));
+      const rows = [
+        ['Matricule','Nom','Prénom','Collège','Actif','Total reçu','Reste à payer','Entrée'],
+        ...data.map((a, i) => [
+          a.mat || `V-${String(i+1).padStart(3,'0')}`,
+          a.nom || '', a.prenom || '', a.college || '',
+          a.actif ? 'Oui' : 'Non',
+          (a.totalRecu || 0).toFixed(2),
+          (a.resteAPayer || 0).toFixed(2),
+          a.dateEntree || ''
+        ])
+      ];
+      const csv    = rows.map(r => r.join(';')).join('\n');
+      const anchor = document.createElement('a');
+      anchor.href     = 'data:text/csv;charset=utf-8,﻿' + encodeURIComponent(csv);
+      anchor.download = `adherents_fo_valeo_${ANNEE_COURANTE}.csv`;
+      anchor.click();
     }
 
-    function syncSheets() { loadAdherents(); alert('✅ Données rechargées.'); }
+    function syncSheets() { loadAdherents(); alert('✅ Données rechargées depuis la base locale.'); }
 
-    const API = 'https://fo-syndicat-backend-production.up.railway.app';
     const MIME_ICONS = {
       'application/pdf': 'fa-file-pdf',
       'application/vnd.google-apps.spreadsheet': 'fa-file-excel',
@@ -485,6 +668,9 @@
     document.querySelector('[onclick="showSection(\'gdrive\')"]')?.addEventListener('click', () => {
       setTimeout(loadDriveFiles, 100);
     });
+
+    // ── Init : charger le tableau de bord au démarrage ──
+    loadDashboard();
   </script>
 </body>
 </html>

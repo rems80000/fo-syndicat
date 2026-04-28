@@ -388,6 +388,134 @@ tr:hover td { background: #fafafa; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .form-label { font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; display: block; }
 
+/* ── SECTION GREY ── */
+.section-grey { background: #f4f4f6; }
+
+/* ── SOCIAL LIVE GRID (Twitter + Facebook) ── */
+.social-live-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  align-items: start;
+}
+
+.social-live-col {
+  background: #fff;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,.08);
+  display: flex;
+  flex-direction: column;
+}
+
+.social-live-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  gap: 12px;
+}
+.twitter-header   { background: #000;     color: #fff; }
+.facebook-header  { background: #1877f2; color: #fff; }
+.whatsapp-header  { background: #075e54; color: #fff; }
+
+.social-live-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: .95rem;
+}
+.social-live-title i  { font-size: 1.4rem; }
+.social-live-title strong { display: block; font-size: .95rem; }
+.social-live-title span   { display: block; font-size: .75rem; opacity: .8; }
+
+.social-follow-btn {
+  background: rgba(255,255,255,.15) !important;
+  color: #fff !important;
+  border-color: rgba(255,255,255,.4) !important;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.social-follow-btn:hover {
+  background: rgba(255,255,255,.30) !important;
+}
+
+.social-live-feed {
+  padding: 0;
+  min-height: 400px;
+  overflow: hidden;
+}
+
+/* Twitter iframe fills column */
+.social-live-feed .twitter-timeline { width: 100% !important; }
+
+/* Facebook page plugin fills column */
+.fb-page-wrap { display: flex; justify-content: center; }
+.fb-page-wrap .fb-page,
+.fb-page-wrap .fb-page span,
+.fb-page-wrap .fb-page span iframe {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* ── FIL WHATSAPP ── */
+.wa-feed {
+  background: #ece5dd;
+  min-height: 400px;
+  padding: 16px;
+}
+.wa-chat { display: flex; flex-direction: column; gap: 10px; }
+
+.wa-chat-date-sep {
+  text-align: center;
+  font-size: .72rem;
+  color: #667781;
+  background: #fff8e7;
+  border-radius: 8px;
+  padding: 4px 12px;
+  margin: 4px auto;
+  max-width: 220px;
+  box-shadow: 0 1px 2px rgba(0,0,0,.1);
+}
+
+.wa-bubble {
+  background: #fff;
+  border-radius: 0 8px 8px 8px;
+  padding: 10px 14px 6px;
+  max-width: 92%;
+  align-self: flex-start;
+  box-shadow: 0 1px 3px rgba(0,0,0,.12);
+  position: relative;
+}
+.wa-bubble::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -7px;
+  border-width: 0 8px 8px 0;
+  border-style: solid;
+  border-color: transparent #fff transparent transparent;
+}
+.wa-bubble-text {
+  font-size: .9rem;
+  color: #111;
+  line-height: 1.5;
+  margin-bottom: 4px;
+}
+.wa-bubble-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: flex-end;
+}
+.wa-sender { font-size: .7rem; color: #25d366; font-weight: 700; margin-right: auto; }
+.wa-time   { font-size: .68rem; color: #999; }
+.wa-ticks  { font-size: .68rem; color: #53bdeb; }
+
+/* ── FOOTER SOCIAL ICONS (mise à jour) ── */
+.social-icon.twitter       { background: #000; }
+.social-icon.facebook-group{ background: #1877f2; opacity:.8; }
+.social-icon.email         { background: var(--red); }
+
 /* ── RESPONSIVE ── */
 @media (max-width: 1024px) {
   .footer-inner { grid-template-columns: 1fr 1fr; }
@@ -406,6 +534,7 @@ tr:hover td { background: #fafafa; }
   .dashboard-main { padding: 20px; }
   .form-row { grid-template-columns: 1fr; }
   .cards-row { grid-template-columns: 1fr 1fr; }
+  .social-live-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 480px) {
   .cards-row { grid-template-columns: 1fr; }

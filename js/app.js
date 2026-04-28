@@ -69,29 +69,42 @@ const NETWORK_META = {
 };
 
 function loadSocialFeed() {
+  // Ancien fil timeline (non utilisé sur la page principale, conservé pour compatibilité)
   const feed = document.getElementById('socialFeed');
   if (!feed) return;
-  feed.innerHTML = '<div class="feed-loading"><i class="fas fa-spinner fa-spin"></i> Chargement...</div>';
-  setTimeout(() => {
-    const sorted = [...ALL_POSTS].sort((a, b) => b.ts - a.ts);
-    feed.innerHTML = `<div class="timeline">${sorted.map(p => {
-      const m = NETWORK_META[p.network];
-      return `
-        <div class="timeline-item">
-          <div class="timeline-icon" style="background:${m.color}">
-            <i class="${m.icon}"></i>
+  feed.innerHTML = '';
+}
+
+// ── FIL WHATSAPP ──
+const WA_POSTS = ALL_POSTS
+  .filter(p => p.network === 'whatsapp')
+  .sort((a, b) => b.ts - a.ts);
+
+function loadWhatsAppFeed() {
+  const feed = document.getElementById('waFeed');
+  if (!feed) return;
+
+  if (!WA_POSTS.length) {
+    feed.innerHTML = `<div style="padding:40px;text-align:center;color:#aaa;">
+      <i class="fab fa-whatsapp" style="font-size:2.5rem;color:#25d366;display:block;margin-bottom:12px;"></i>
+      <p>Aucun message pour l'instant.</p>
+    </div>`;
+    return;
+  }
+
+  feed.innerHTML = `
+    <div class="wa-chat">
+      <div class="wa-chat-date-sep">Dernières communications</div>
+      ${WA_POSTS.map(p => `
+        <div class="wa-bubble">
+          <div class="wa-bubble-text">${p.content}</div>
+          <div class="wa-bubble-meta">
+            <span class="wa-sender">FO Métaux Valeo Amiens</span>
+            <span class="wa-time">${p.date}</span>
+            <span class="wa-ticks">✓✓</span>
           </div>
-          <div class="timeline-card">
-            <div class="timeline-meta">
-              <span class="timeline-source" style="color:${m.color}">${m.label}</span>
-              <span class="timeline-date">${p.date}</span>
-            </div>
-            <p class="timeline-content">${p.content}</p>
-            ${p.link ? `<a href="${p.link}" target="_blank" rel="noopener" class="timeline-link">Lire sur fo-metaux.fr <i class="fas fa-external-link-alt"></i></a>` : ''}
-          </div>
-        </div>`;
-    }).join('')}</div>`;
-  }, 300);
+        </div>`).join('')}
+    </div>`;
 }
 
 // ── ACTUS ──
@@ -150,6 +163,7 @@ function requireLogin(e) {
 document.addEventListener('DOMContentLoaded', () => {
   loadActus();
   loadSocialFeed();
+  loadWhatsAppFeed();
 
   document.getElementById('contactForm')?.addEventListener('submit', e => {
     e.preventDefault();

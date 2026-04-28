@@ -49,12 +49,64 @@
   </section>
 
   <!-- RÉSEAUX SOCIAUX -->
-  <section class="section section-dark" id="reseaux">
+  <section class="section section-grey" id="reseaux">
     <div class="container">
-      <h2 class="section-title">Dernières <span class="text-red">Publications</span></h2>
-      <div class="social-feed" id="socialFeed">
-        <div class="feed-loading"><i class="fas fa-spinner fa-spin"></i> Chargement...</div>
-      </div>
+      <h2 class="section-title">Suivez-nous sur les <span class="text-red">Réseaux</span></h2>
+      <p class="section-desc" style="text-align:center;margin-bottom:32px;">Publications en direct de FO Métaux Valeo Amiens et de la Fédération nationale</p>
+
+      <div class="social-live-grid">
+
+        <!-- ── WhatsApp — FO Métaux Valeo Amiens ── -->
+        <div class="social-live-col">
+          <div class="social-live-header whatsapp-header">
+            <div class="social-live-title">
+              <i class="fab fa-whatsapp"></i>
+              <div>
+                <strong>FO Métaux Valeo Amiens</strong>
+                <span>Groupe WhatsApp — communications syndicales</span>
+              </div>
+            </div>
+          </div>
+          <div class="social-live-feed wa-feed" id="waFeed">
+            <div style="text-align:center;padding:40px;color:#aaa;">
+              <i class="fas fa-spinner fa-spin"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Facebook Fédération FO Métaux ── -->
+        <div class="social-live-col">
+          <div class="social-live-header facebook-header">
+            <div class="social-live-title">
+              <i class="fab fa-facebook-f"></i>
+              <div>
+                <strong>Fédération FO Métaux</strong>
+                <span>Publications nationales</span>
+              </div>
+            </div>
+            <a href="https://www.facebook.com/federationfometaux" target="_blank" rel="noopener" class="btn btn-sm social-follow-btn">
+              <i class="fab fa-facebook-f"></i> Voir la page
+            </a>
+          </div>
+          <div class="social-live-feed fb-page-wrap">
+            <div id="fb-root"></div>
+            <div class="fb-page"
+                 data-href="https://www.facebook.com/federationfometaux/"
+                 data-tabs="timeline"
+                 data-width=""
+                 data-height="580"
+                 data-small-header="true"
+                 data-adapt-container-width="true"
+                 data-hide-cover="false"
+                 data-show-facepile="false">
+              <blockquote cite="https://www.facebook.com/federationfometaux/" class="fb-xfbml-parse-ignore">
+                <a href="https://www.facebook.com/federationfometaux/">Fédération FO Métaux</a>
+              </blockquote>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /social-live-grid -->
     </div>
   </section>
 
@@ -131,9 +183,10 @@
       <div class="footer-social">
         <h4>Suivez-nous</h4>
         <div class="social-icons">
-          <a href="#" class="social-icon instagram"><i class="fab fa-instagram"></i></a>
-          <a href="#" class="social-icon facebook"><i class="fab fa-facebook-f"></i></a>
-          <a href="#" class="social-icon whatsapp"><i class="fab fa-whatsapp"></i></a>
+          <a href="https://twitter.com/ValeoFo" target="_blank" rel="noopener" class="social-icon twitter" title="@ValeoFo sur X / Twitter"><i class="fab fa-x-twitter"></i></a>
+          <a href="https://www.facebook.com/federationfometaux/" target="_blank" rel="noopener" class="social-icon facebook" title="Fédération FO Métaux"><i class="fab fa-facebook-f"></i></a>
+          <a href="https://www.facebook.com/groups/163021789711419" target="_blank" rel="noopener" class="social-icon facebook-group" title="Groupe FO Métaux Valeo Amiens"><i class="fab fa-facebook"></i></a>
+          <a href="mailto:fo.metaux.valeo.amiens@gmail.com" class="social-icon email" title="Nous contacter par email"><i class="fas fa-envelope"></i></a>
         </div>
       </div>
     </div>
@@ -161,6 +214,11 @@
       </div>
     </div>
   </div>
+
+  <!-- SDK Facebook -->
+  <script async defer crossorigin="anonymous"
+    src="https://connect.facebook.net/fr_FR/sdk.js#xfbml=1&version=v19.0">
+  </script>
 
   <script src="js/auth.js"></script>
   <script src="js/app.js"></script>
