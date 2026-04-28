@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mon Espace – FO Métaux Valeo Amiens</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../index.html" class="logo">
+        <img src="../assets/img/logo.png" alt="FO Métaux Amiens" class="logo-img" />
+      </a>
+      <nav class="main-nav" id="mainNav">
+        <a href="../index.html" class="nav-link"><i class="fas fa-home"></i> Accueil</a>
+        <a href="membre.html" class="nav-link active"><i class="fas fa-user"></i> Mon Espace</a>
+      </nav>
+      <div class="header-actions">
+        <span id="headerUserName" style="color:#aaa;font-size:.85rem;"></span>
+        <button onclick="Auth.logout()" class="btn btn-outline-white btn-sm"><i class="fas fa-sign-out-alt"></i> Déconnexion</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar" id="avatarInitials">--</div>
+        <div class="sidebar-user-name" id="sidebarName">Chargement...</div>
+        <div class="sidebar-user-role"><i class="fas fa-circle" style="color:#4caf50;font-size:.5rem;"></i> Adhérent actif</div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="sidebar-nav-item active" onclick="showSection('cotisations')">
+          <i class="fas fa-euro-sign"></i> Mes Cotisations
+        </div>
+        <div class="sidebar-nav-item" onclick="showSection('profil')">
+          <i class="fas fa-id-card"></i> Mon Profil
+        </div>
+        <div class="sidebar-nav-item" onclick="showSection('actus')">
+          <i class="fas fa-newspaper"></i> Actualités
+        </div>
+        <div class="sidebar-nav-item" onclick="showSection('documents')">
+          <i class="fas fa-folder-open"></i> Documents
+        </div>
+      </nav>
+      <div class="sidebar-logout">
+        <button onclick="Auth.logout()" class="btn btn-outline-white btn-sm" style="width:100%">
+          <i class="fas fa-sign-out-alt"></i> Déconnexion
+        </button>
+      </div>
+    </aside>
+
+    <main class="dashboard-main">
+      <!-- COTISATIONS -->
+      <div id="section-cotisations">
+        <h1 class="dashboard-title">Mes Cotisations</h1>
+        <p class="dashboard-subtitle">Consultez votre situation syndicale à jour.</p>
+
+        <div class="cards-row">
+          <div class="info-card">
+            <div class="info-card-label">Statut</div>
+            <div class="info-card-value" style="font-size:1.1rem;">
+              <span class="badge badge-green" id="statutBadge">À jour</span>
+            </div>
+          </div>
+          <div class="info-card">
+            <div class="info-card-label">Cotisations 2024</div>
+            <div class="info-card-value" id="cotisTotal">—</div>
+            <div class="info-card-sub">sur 12 mois prévus</div>
+          </div>
+          <div class="info-card">
+            <div class="info-card-label">Dernier versement</div>
+            <div class="info-card-value" style="font-size:1.1rem;" id="lastPayment">—</div>
+          </div>
+          <div class="info-card">
+            <div class="info-card-label">Total versé 2024</div>
+            <div class="info-card-value" id="totalPaid">—</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title"><i class="fas fa-chart-line"></i> Progression annuelle</div>
+          <div style="margin-bottom:12px;font-size:.9rem;color:#666;" id="progressLabel">Chargement...</div>
+          <div class="progress-bar-wrap">
+            <div class="progress-bar" id="cotisProgress" style="width:0%"></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title"><i class="fas fa-list"></i> Historique des versements</div>
+          <div class="table-container">
+            <table id="cotisTable">
+              <thead>
+                <tr><th>Mois</th><th>Montant</th><th>Mode</th><th>Statut</th></tr>
+              </thead>
+              <tbody id="cotisTableBody">
+                <tr><td colspan="4" style="text-align:center;color:#999;padding:24px;">Chargement...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROFIL -->
+      <div id="section-profil" style="display:none">
+        <h1 class="dashboard-title">Mon Profil</h1>
+        <p class="dashboard-subtitle">Vos informations personnelles</p>
+        <div class="panel">
+          <div class="panel-title"><i class="fas fa-user"></i> Informations</div>
+          <div class="cards-row">
+            <div class="info-card"><div class="info-card-label">Nom complet</div><div class="info-card-value" style="font-size:1.1rem;" id="profilName">—</div></div>
+            <div class="info-card"><div class="info-card-label">Matricule</div><div class="info-card-value" id="profilMatricule">—</div></div>
+            <div class="info-card"><div class="info-card-label">Rôle</div><div class="info-card-value" style="font-size:1rem;" id="profilRole">Adhérent</div></div>
+            <div class="info-card"><div class="info-card-label">Adhésion depuis</div><div class="info-card-value" style="font-size:1rem;">2019</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTUS -->
+      <div id="section-actus" style="display:none">
+        <h1 class="dashboard-title">Actualités</h1>
+        <p class="dashboard-subtitle">Les dernières nouvelles de votre section</p>
+        <div class="actus-grid" id="membreActusGrid"></div>
+      </div>
+
+      <!-- DOCUMENTS -->
+      <div id="section-documents" style="display:none">
+        <h1 class="dashboard-title">Documents</h1>
+        <p class="dashboard-subtitle">Documents disponibles pour les adhérents</p>
+        <div class="docs-grid">
+          <div class="doc-card">
+            <i class="fas fa-file-pdf doc-icon text-red"></i>
+            <div class="doc-info"><h3>Statuts de la section</h3><p>Document juridique de référence</p></div>
+            <a href="#" class="btn btn-sm btn-outline-red"><i class="fas fa-download"></i> Télécharger</a>
+          </div>
+          <div class="doc-card">
+            <i class="fas fa-file-alt doc-icon text-red"></i>
+            <div class="doc-info"><h3>Compte-rendu AG 2024</h3><p>Assemblée générale – 5 avril 2024</p></div>
+            <a href="#" class="btn btn-sm btn-outline-red"><i class="fas fa-download"></i> Télécharger</a>
+          </div>
+          <div class="doc-card">
+            <i class="fas fa-file-alt doc-icon text-red"></i>
+            <div class="doc-info"><h3>Programme revendicatif 2024</h3><p>Nos revendications pour cette année</p></div>
+            <a href="#" class="btn btn-sm btn-outline-red"><i class="fas fa-download"></i> Télécharger</a>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../js/auth.js"></script>
+  <script>
+    const user = Auth.requireAuth(['membre', 'secretaire', 'admin']);
+    if (user) {
+      document.getElementById('headerUserName').textContent = user.name;
+      document.getElementById('sidebarName').textContent = user.name;
+      document.getElementById('avatarInitials').textContent = user.name.split(' ').map(n=>n[0]).join('');
+      document.getElementById('profilName').textContent = user.name;
+      document.getElementById('profilMatricule').textContent = user.matricule;
+      document.getElementById('profilRole').textContent = user.role.charAt(0).toUpperCase()+user.role.slice(1);
+    }
+
+    const COTIS_DEMO = [
+      { mois:'Janvier 2024',  montant:'24,50 €', mode:'Prélèvement', statut:'payé' },
+      { mois:'Février 2024',  montant:'24,50 €', mode:'Prélèvement', statut:'payé' },
+      { mois:'Mars 2024',     montant:'24,50 €', mode:'Prélèvement', statut:'payé' },
+      { mois:'Avril 2024',    montant:'24,50 €', mode:'Prélèvement', statut:'payé' },
+      { mois:'Mai 2024',      montant:'—',        mode:'—',           statut:'en attente' },
+      { mois:'Juin 2024',     montant:'—',        mode:'—',           statut:'en attente' },
+    ];
+
+    function loadCotisations() {
+      const paid = COTIS_DEMO.filter(c => c.statut === 'payé');
+      document.getElementById('cotisTotal').textContent = `${paid.length}/12`;
+      document.getElementById('lastPayment').textContent = paid.at(-1)?.mois?.split(' ')[0] || '—';
+      document.getElementById('totalPaid').textContent = `${(paid.length * 24.5).toFixed(2)} €`;
+      const pct = Math.round((paid.length / 12) * 100);
+      document.getElementById('cotisProgress').style.width = pct + '%';
+      document.getElementById('progressLabel').textContent = `${paid.length} mois réglés sur 12 (${pct}%)`;
+
+      document.getElementById('cotisTableBody').innerHTML = COTIS_DEMO.map(c => `
+        <tr>
+          <td>${c.mois}</td>
+          <td><strong>${c.montant}</strong></td>
+          <td>${c.mode}</td>
+          <td><span class="badge ${c.statut==='payé'?'badge-green':'badge-orange'}">${c.statut}</span></td>
+        </tr>`).join('');
+    }
+
+    function showSection(id) {
+      document.querySelectorAll('.dashboard-main > div').forEach(d => d.style.display = 'none');
+      document.getElementById('section-'+id).style.display = 'block';
+      document.querySelectorAll('.sidebar-nav-item').forEach(i => i.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+      if (id === 'actus') loadActusSection();
+    }
+
+    function loadActusSection() {
+      const grid = document.getElementById('membreActusGrid');
+      const actus = [
+        { title:'Accord salaires 2024', date:'24 Avr 2024', tag:'Négociation', excerpt:'Revalorisation de 2,5% obtenue pour tous les salariés.' },
+        { title:'Formation SSCT ouverte', date:'15 Avr 2024', tag:'Formation', excerpt:'Inscriptions ouvertes pour la session de mai.' },
+        { title:'AG ordinaire – CR disponible', date:'8 Avr 2024', tag:'Événement', excerpt:'Le compte-rendu de l\'AG est disponible dans vos documents.' },
+      ];
+      grid.innerHTML = actus.map(a => `
+        <div class="actu-card">
+          <div style="height:120px;background:linear-gradient(135deg,#1e1e1e,#3a3a3a);display:flex;align-items:center;justify-content:center;">
+            <i class="fas fa-newspaper" style="font-size:2rem;color:#cc000055;"></i>
+          </div>
+          <div class="actu-card-body">
+            <div class="actu-card-meta"><span class="tag">${a.tag}</span><span>${a.date}</span></div>
+            <h3>${a.title}</h3><p>${a.excerpt}</p>
+          </div>
+        </div>`).join('');
+    }
+
+    loadCotisations();
+  </script>
+</body>
+</html>

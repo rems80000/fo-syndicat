@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Connexion – FO Métaux Valeo Amiens</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="index.html" class="logo">
+        <img src="assets/img/logo.png" alt="FO Métaux Amiens" class="logo-img" />
+      </a>
+    </div>
+  </header>
+
+  <div class="login-page">
+    <div class="login-card">
+      <div class="login-logo">
+        <img src="assets/img/logo.png" alt="FO Métaux Amiens" class="logo-img-login" />
+        <h2>Espace Adhérent</h2>
+        <p>Section Valeo Amiens</p>
+      </div>
+
+      <form id="loginForm" novalidate>
+        <div class="form-group">
+          <label for="email"><i class="fas fa-envelope"></i> Email ou identifiant</label>
+          <input type="text" id="email" name="email" placeholder="votre@email.com" autocomplete="username" />
+          <span class="form-error" id="emailError">Identifiant invalide</span>
+        </div>
+        <div class="form-group">
+          <label for="password"><i class="fas fa-lock"></i> Mot de passe</label>
+          <input type="password" id="password" name="password" placeholder="••••••••" autocomplete="current-password" />
+          <span class="form-error" id="passwordError">Mot de passe requis</span>
+        </div>
+        <div id="loginError" style="color:#cc0000;font-size:.85rem;margin-bottom:8px;display:none">
+          <i class="fas fa-exclamation-circle"></i> Identifiants incorrects. Veuillez réessayer.
+        </div>
+        <button type="submit" class="login-submit" id="loginBtn">
+          <span id="loginBtnText">Se connecter</span>
+          <i class="fas fa-spinner fa-spin" id="loginSpinner" style="display:none"></i>
+        </button>
+      </form>
+
+      <div class="login-back">
+        <a href="index.html"><i class="fas fa-arrow-left"></i> Retour au site</a>
+        &nbsp;·&nbsp;
+        <a href="mailto:fo.metaux.valeo.amiens@gmail.com">Mot de passe oublié ?</a>
+      </div>
+
+      <div style="margin-top:24px;padding:14px;background:#f5f5f5;border-radius:8px;font-size:.8rem;color:#666;">
+        <strong>Comptes de démonstration :</strong><br>
+        Adhérent : <code>membre@demo.fr</code> / <code>membre123</code><br>
+        Secrétaire : <code>secretaire@demo.fr</code> / <code>secr123</code><br>
+        Admin : <code>admin@demo.fr</code> / <code>admin123</code><br>
+        Trésorier : <code>tresorier@demo.fr</code> / <code>tresor123</code>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/auth.js"></script>
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const btn = document.getElementById('loginBtn');
+      const spinner = document.getElementById('loginSpinner');
+      const btnText = document.getElementById('loginBtnText');
+      const errorDiv = document.getElementById('loginError');
+
+      btn.disabled = true;
+      spinner.style.display = 'inline';
+      btnText.textContent = 'Connexion...';
+      errorDiv.style.display = 'none';
+
+      const result = await Auth.login(email, password);
+      if (result.success) {
+        const redirectMap = {
+          membre: 'pages/membre.html',
+          secretaire: 'pages/secretaire.html',
+          admin: 'pages/admin.html',
+          tresorier: 'pages/tresorier.html'
+        };
+        window.location.href = redirectMap[result.role] || 'pages/membre.html';
+      } else {
+        errorDiv.style.display = 'block';
+        btn.disabled = false;
+        spinner.style.display = 'none';
+        btnText.textContent = 'Se connecter';
+      }
+    });
+  </script>
+</body>
+</html>

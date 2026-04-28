@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Espace Trésorier – FO Métaux Valeo Amiens</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="../css/tresorier.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../index.html" class="logo">
+        <img src="../assets/img/logo.png" alt="FO Métaux Amiens" class="logo-img" />
+      </a>
+      <div class="header-actions">
+        <span style="color:#f0ad4e;font-size:.82rem;font-weight:700;"><i class="fas fa-coins"></i> Trésorerie</span>
+        <span id="headerUserName" style="color:#aaa;font-size:.85rem;margin-left:12px;"></span>
+        <button onclick="Auth.logout()" class="btn btn-outline-white btn-sm"><i class="fas fa-sign-out-alt"></i> Déconnexion</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar" id="avatarInitials" style="background:#f0ad4e;color:#000;">TR</div>
+        <div class="sidebar-user-name" id="sidebarName">Trésorier</div>
+        <div class="sidebar-user-role" style="color:#f0ad4e;"><i class="fas fa-coins" style="font-size:.6rem;"></i> Trésorier</div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="sidebar-nav-item active" onclick="showSection('import')">
+          <i class="fas fa-file-import"></i> Import relevé CA
+        </div>
+        <div class="sidebar-nav-item" onclick="showSection('pointage')">
+          <i class="fas fa-check-double"></i> Pointage
+        </div>
+        <div class="sidebar-nav-item" onclick="showSection('bilan')">
+          <i class="fas fa-chart-bar"></i> Bilan mensuel
+        </div>
+        <div class="sidebar-nav-item" onclick="showSection('cotisations')">
+          <i class="fas fa-users"></i> Suivi adhérents
+        </div>
+      </nav>
+      <div class="sidebar-logout">
+        <button onclick="Auth.logout()" class="btn btn-outline-white btn-sm" style="width:100%">
+          <i class="fas fa-sign-out-alt"></i> Déconnexion
+        </button>
+      </div>
+    </aside>
+
+    <main class="dashboard-main">
+
+      <!-- ═══ IMPORT RELEVÉ ═══ -->
+      <div id="section-import">
+        <h1 class="dashboard-title">Import relevé Crédit Agricole</h1>
+        <p class="dashboard-subtitle">Téléchargez votre relevé depuis l'application CA puis importez-le ici.</p>
+
+        <!-- Instructions -->
+        <div class="panel" style="border-left:4px solid #f0ad4e;">
+          <div class="panel-title"><i class="fas fa-info-circle" style="color:#f0ad4e;"></i> Comment exporter depuis Crédit Agricole</div>
+          <div class="ca-steps">
+            <div class="ca-step"><div class="ca-step-num">1</div><div>Connectez-vous sur <strong>creditagricole.fr</strong> ou l'application mobile CA</div></div>
+            <div class="ca-step"><div class="ca-step-num">2</div><div>Allez dans <strong>Comptes → Relevés</strong> → sélectionnez votre compte FO</div></div>
+            <div class="ca-step"><div class="ca-step-num">3</div><div>Cliquez <strong>Télécharger</strong> → choisissez le format <strong>CSV</strong></div></div>
+            <div class="ca-step"><div class="ca-step-num">4</div><div>Importez le fichier ci-dessous — le pointage se fait automatiquement</div></div>
+          </div>
+        </div>
+
+        <!-- Zone d'upload -->
+        <div class="panel">
+          <div class="panel-title"><i class="fas fa-cloud-upload-alt"></i> Importer un relevé</div>
+          <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileReleve').click()">
+            <i class="fas fa-file-csv" style="font-size:3rem;color:#f0ad4e;margin-bottom:12px;display:block;"></i>
+            <p style="font-weight:600;">Glissez votre fichier CSV ici</p>
+            <p style="color:#aaa;font-size:.85rem;margin-top:4px;">ou cliquez pour parcourir · Format CSV Crédit Agricole</p>
+            <input type="file" id="fileReleve" accept=".csv,.txt,.xls,.xlsx" style="display:none" onchange="importerReleve(this)" />
+          </div>
+          <div id="importProgress" style="display:none;text-align:center;padding:20px;">
+            <i class="fas fa-spinner fa-spin" style="font-size:2rem;color:#f0ad4e;"></i>
+            <p style="margin-top:8px;color:#666;">Analyse en cours...</p>
+          </div>
+          <div id="importResult"></div>
+        </div>
+
+        <!-- Dernière opération -->
+        <div class="panel" id="lastImportPanel" style="display:none;">
+          <div class="panel-title"><i class="fas fa-history"></i> Dernier import chargé</div>
+          <div id="lastImportInfo"></div>
+        </div>
+      </div>
+
+      <!-- ═══ POINTAGE ═══ -->
+      <div id="section-pointage" style="display:none;">
+        <h1 class="dashboard-title">Pointage des opérations</h1>
+        <p class="dashboard-subtitle">Validez les opérations identifiées automatiquement et traitez les cas restants.</p>
+
+        <!-- Stats pointage -->
+        <div class="cards-row" id="statsPointage" style="display:none;">
+          <div class="info-card" style="border-top-color:#28a745;">
+            <div class="info-card-label">Pointés auto</div>
+            <div class="info-card-value text-green" id="statPointe">0</div>
+          </div>
+          <div class="info-card" style="border-top-color:#007bff;">
+            <div class="info-card-label">À valider</div>
+            <div class="info-card-value" style="color:#007bff;" id="statAValider">0</div>
+          </div>
+          <div class="info-card" style="border-top-color:#f0ad4e;">
+            <div class="info-card-label">Non identifiés</div>
+            <div class="info-card-value" style="color:#f0ad4e;" id="statNonId">0</div>
+          </div>
+          <div class="info-card">
+            <div class="info-card-label">Total crédits</div>
+            <div class="info-card-value text-red" id="statTotal">0 €</div>
+          </div>
+        </div>
+
+        <!-- Filtres -->
+        <div class="panel" id="pointagePanel" style="display:none;">
+          <div class="panel-title" style="justify-content:space-between;">
+            <span><i class="fas fa-list"></i> Opérations</span>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn btn-sm filter-btn active" data-filter="tous" onclick="filtrerOps('tous', this)">Toutes</button>
+              <button class="btn btn-sm filter-btn" data-filter="pointe_auto" onclick="filtrerOps('pointe_auto', this)" style="background:#d4edda;color:#155724;border-color:#c3e6cb;">✅ Auto</button>
+              <button class="btn btn-sm filter-btn" data-filter="a_valider" onclick="filtrerOps('a_valider', this)" style="background:#cce5ff;color:#004085;border-color:#b8daff;">🔵 À valider</button>
+              <button class="btn btn-sm filter-btn" data-filter="non_identifie" onclick="filtrerOps('non_identifie', this)" style="background:#fff3cd;color:#856404;border-color:#ffeeba;">⚠️ Non identifiés</button>
+              <button class="btn btn-sm btn-red" onclick="validerTous()"><i class="fas fa-check-double"></i> Tout valider</button>
+            </div>
+          </div>
+          <div class="table-container">
+            <table id="opsTable">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Libellé bancaire</th>
+                  <th>Crédit</th>
+                  <th>Débit</th>
+                  <th>Adhérent identifié</th>
+                  <th>Statut</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="opsBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Vide -->
+        <div class="panel" id="pointageVide">
+          <div style="text-align:center;padding:48px;color:#aaa;">
+            <i class="fas fa-file-import" style="font-size:3rem;margin-bottom:16px;display:block;"></i>
+            <p style="font-size:1.1rem;">Aucun relevé importé</p>
+            <p style="font-size:.88rem;margin-top:8px;">Importez un relevé Crédit Agricole pour démarrer le pointage.</p>
+            <button class="btn btn-red" style="margin-top:20px;" onclick="showSection('import');setActiveNav('import')">
+              <i class="fas fa-file-import"></i> Importer un relevé
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ BILAN ═══ -->
+      <div id="section-bilan" style="display:none;">
+        <h1 class="dashboard-title">Bilan mensuel</h1>
+        <p class="dashboard-subtitle">Synthèse des encaissements de cotisations.</p>
+
+        <div class="cards-row">
+          <div class="info-card" style="border-top-color:#28a745;">
+            <div class="info-card-label">Encaissé 2026</div>
+            <div class="info-card-value" id="bilanTotal">— €</div>
+          </div>
+          <div class="info-card">
+            <div class="info-card-label">Adhérents à jour</div>
+            <div class="info-card-value" id="bilanAJour">—</div>
+          </div>
+          <div class="info-card" style="border-top-color:#f0ad4e;">
+            <div class="info-card-label">En attente</div>
+            <div class="info-card-value" id="bilanAttente">—</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title" style="justify-content:space-between;">
+            <span><i class="fas fa-table"></i> Tableau de suivi</span>
+            <button class="btn btn-sm btn-outline-red" onclick="exporterBilan()"><i class="fas fa-download"></i> Export CSV</button>
+          </div>
+          <div class="table-container">
+            <table id="bilanTable">
+              <thead>
+                <tr><th>Adhérent</th><th>Montant attendu</th><th>Reçu</th><th>Date</th><th>Mode</th><th>Statut</th></tr>
+              </thead>
+              <tbody id="bilanBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ SUIVI ADHÉRENTS ═══ -->
+      <div id="section-cotisations" style="display:none;">
+        <h1 class="dashboard-title">Suivi des adhérents</h1>
+        <p class="dashboard-subtitle">État des cotisations par adhérent.</p>
+        <div class="panel">
+          <div class="panel-title" style="justify-content:space-between;">
+            <span><i class="fas fa-users"></i> Adhérents (29)</span>
+            <input type="text" placeholder="Rechercher..." style="padding:6px 12px;border:1px solid #ddd;border-radius:6px;font-size:.85rem;" oninput="filtrerAdherents(this.value)" />
+          </div>
+          <div class="table-container">
+            <table><thead><tr><th>Nom</th><th>Prénom</th><th>Montant attendu</th><th>Cotisation reçue</th><th>Statut</th></tr></thead>
+            <tbody id="adherentsBody2"></tbody></table>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- MODAL attribution manuelle -->
+  <div id="modalAttrib" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9000;display:none;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:12px;padding:32px;max-width:400px;width:90%;">
+      <h3 style="margin-bottom:16px;"><i class="fas fa-user-tag"></i> Attribuer à un adhérent</h3>
+      <p style="font-size:.88rem;color:#666;margin-bottom:16px;" id="modalLibelle"></p>
+      <select id="modalAdherent" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;margin-bottom:16px;font-size:.92rem;">
+        <option value="">— Sélectionner un adhérent —</option>
+      </select>
+      <div style="display:flex;gap:12px;">
+        <button class="btn btn-red" onclick="confirmerAttribution()"><i class="fas fa-check"></i> Attribuer</button>
+        <button class="btn btn-outline-red" onclick="fermerModal()"><i class="fas fa-times"></i> Annuler</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/auth.js"></script>
+  <script>
+    const API = 'https://fo-syndicat-backend-production.up.railway.app';
+    let operations = [];
+    let filterActif = 'tous';
+    let modalIdx = null;
+
+    // Auth
+    const user = Auth.requireAuth(['tresorier', 'admin']);
+    if (user) {
+      document.getElementById('headerUserName').textContent = user.name;
+      document.getElementById('sidebarName').textContent = user.name;
+      document.getElementById('avatarInitials').textContent = user.name.split(' ').map(n=>n[0]).join('').substring(0,2);
+    }
+
+    // ── Navigation ──
+    function showSection(id) {
+      document.querySelectorAll('.dashboard-main > div').forEach(d => d.style.display = 'none');
+      document.getElementById('section-'+id).style.display = 'block';
+      if (id === 'pointage') afficherOps();
+      if (id === 'bilan') chargerBilan();
+      if (id === 'cotisations') chargerAdherents();
+    }
+
+    function setActiveNav(id) {
+      document.querySelectorAll('.sidebar-nav-item').forEach(i => i.classList.remove('active'));
+      document.querySelectorAll('.sidebar-nav-item').forEach(i => {
+        if (i.getAttribute('onclick')?.includes(id)) i.classList.add('active');
+      });
+    }
+
+    document.querySelectorAll('.sidebar-nav-item').forEach(item => {
+      item.addEventListener('click', () => {
+        document.querySelectorAll('.sidebar-nav-item').forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+      });
+    });
+
+    // ── Upload ──
+    const uploadArea = document.getElementById('uploadArea');
+    uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+    uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+    uploadArea.addEventListener('drop', e => {
+      e.preventDefault(); uploadArea.classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      if (file) importerFichier(file);
+    });
+
+    async function importerReleve(input) {
+      if (input.files[0]) importerFichier(input.files[0]);
+    }
+
+    async function importerFichier(file) {
+      uploadArea.style.display = 'none';
+      document.getElementById('importProgress').style.display = 'block';
+      document.getElementById('importResult').innerHTML = '';
+
+      const formData = new FormData();
+      formData.append('releve', file);
+
+      try {
+        const token = Auth.getToken();
+        const res = await fetch(`${API}/api/treasury/import`, {
+          method: 'POST',
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          body: formData,
+        });
+        const data = await res.json();
+        document.getElementById('importProgress').style.display = 'none';
+
+        if (!res.ok) {
+          afficherErreur(data.error || 'Erreur lors de l\'import');
+          uploadArea.style.display = 'block';
+          return;
+        }
+
+        operations = data.operations;
+        afficherResultatImport(data.stats);
+        uploadArea.style.display = 'block';
+
+      } catch (e) {
+        // Mode démo : parser en local
+        const text = await file.text();
+        operations = parseCSVLocal(text);
+        const stats = calculerStats(operations);
+        document.getElementById('importProgress').style.display = 'none';
+        afficherResultatImport(stats);
+        uploadArea.style.display = 'block';
+      }
+    }
+
+    function afficherResultatImport(stats) {
+      document.getElementById('importResult').innerHTML = `
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:20px;">
+          <div style="text-align:center;padding:16px;background:#d4edda;border-radius:8px;">
+            <div style="font-size:1.8rem;font-weight:800;color:#155724;">${stats.pointeAuto}</div>
+            <div style="font-size:.8rem;color:#155724;">✅ Pointés auto</div>
+          </div>
+          <div style="text-align:center;padding:16px;background:#cce5ff;border-radius:8px;">
+            <div style="font-size:1.8rem;font-weight:800;color:#004085;">${stats.aValider}</div>
+            <div style="font-size:.8rem;color:#004085;">🔵 À valider</div>
+          </div>
+          <div style="text-align:center;padding:16px;background:#fff3cd;border-radius:8px;">
+            <div style="font-size:1.8rem;font-weight:800;color:#856404;">${stats.nonIdentifie}</div>
+            <div style="font-size:.8rem;color:#856404;">⚠️ Non identifiés</div>
+          </div>
+          <div style="text-align:center;padding:16px;background:#f5f5f5;border-radius:8px;">
+            <div style="font-size:1.8rem;font-weight:800;color:#cc0000;">${stats.total}</div>
+            <div style="font-size:.8rem;color:#666;">Total opérations</div>
+          </div>
+        </div>
+        <div style="margin-top:16px;text-align:center;">
+          <button class="btn btn-red" onclick="showSection('pointage');setActiveNav('pointage')">
+            <i class="fas fa-check-double"></i> Aller au pointage
+          </button>
+        </div>`;
+
+      const panel = document.getElementById('lastImportPanel');
+      panel.style.display = 'block';
+      document.getElementById('lastImportInfo').innerHTML = `
+        <p style="color:#666;font-size:.9rem;">
+          📁 <strong>${stats.total} opérations</strong> importées —
+          Crédits : <strong style="color:#28a745;">${stats.totalCredit} €</strong> —
+          Débits : <strong style="color:#cc0000;">${stats.totalDebit} €</strong>
+        </p>`;
+    }
+
+    function afficherErreur(msg) {
+      document.getElementById('importResult').innerHTML = `
+        <div style="padding:16px;background:#f8d7da;border-radius:8px;color:#721c24;margin-top:16px;">
+          <i class="fas fa-exclamation-circle"></i> ${msg}
+        </div>`;
+    }
+
+    // ── Pointage ──
+    function afficherOps() {
+      if (!operations.length) {
+        document.getElementById('pointageVide').style.display = 'block';
+        document.getElementById('pointagePanel').style.display = 'none';
+        document.getElementById('statsPointage').style.display = 'none';
+        return;
+      }
+      document.getElementById('pointageVide').style.display = 'none';
+      document.getElementById('pointagePanel').style.display = 'block';
+      document.getElementById('statsPointage').style.display = 'grid';
+      mettreAJourStats();
+      renderOps(filterActif);
+    }
+
+    function mettreAJourStats() {
+      const stats = calculerStats(operations);
+      document.getElementById('statPointe').textContent = stats.pointeAuto;
+      document.getElementById('statAValider').textContent = stats.aValider;
+      document.getElementById('statNonId').textContent = stats.nonIdentifie;
+      document.getElementById('statTotal').textContent = stats.totalCredit + ' €';
+    }
+
+    function renderOps(filtre) {
+      filterActif = filtre;
+      const list = filtre === 'tous' ? operations : operations.filter(o => o.statut === filtre || (filtre === 'pointe_auto' && o.statut === 'valide_manuellement'));
+      const LABELS = { pointe_auto:'✅ Auto', a_valider:'🔵 À valider', non_identifie:'⚠️ Non identifié', valide_manuellement:'✅ Validé' };
+      const COLORS = { pointe_auto:'badge-green', a_valider:'', non_identifie:'badge-orange', valide_manuellement:'badge-green' };
+
+      document.getElementById('opsBody').innerHTML = list.map((op, realIdx) => {
+        const idx = operations.indexOf(op);
+        const badgeClass = COLORS[op.statut] || '';
+        const badgeStyle = op.statut === 'a_valider' ? 'background:#cce5ff;color:#004085;' : '';
+        return `<tr>
+          <td>${op.date}</td>
+          <td style="max-width:260px;font-size:.82rem;">${op.libelle}</td>
+          <td>${op.credit ? '<strong style="color:#28a745;">'+op.credit.toFixed(2)+' €</strong>' : '—'}</td>
+          <td>${op.debit ? '<span style="color:#cc0000;">'+op.debit.toFixed(2)+' €</span>' : '—'}</td>
+          <td>${op.adherent ? `<strong>${op.adherent}</strong>${op.montantAttendu ? `<br><small style="color:#aaa;">attendu : ${op.montantAttendu} €</small>` : ''}` : '<span style="color:#aaa;">—</span>'}</td>
+          <td><span class="badge ${badgeClass}" style="${badgeStyle}">${LABELS[op.statut] || op.statut}</span></td>
+          <td>
+            ${op.valide ? '<span style="color:#28a745;font-size:.8rem;">✓ Validé</span>' : `
+              <div style="display:flex;gap:4px;">
+                <button class="btn btn-sm" style="background:#28a745;color:#fff;padding:4px 10px;" onclick="validerOp(${idx})">✓</button>
+                <button class="btn btn-sm btn-outline-red" style="padding:4px 10px;" onclick="ouvrirModal(${idx})"><i class="fas fa-user-tag"></i></button>
+              </div>`}
+          </td>
+        </tr>`;
+      }).join('') || '<tr><td colspan="7" style="text-align:center;color:#aaa;padding:24px;">Aucune opération dans ce filtre.</td></tr>';
+    }
+
+    function filtrerOps(filtre, btn) {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderOps(filtre);
+    }
+
+    function validerOp(idx) {
+      if (!operations[idx]) return;
+      operations[idx].valide = true;
+      operations[idx].statut = 'valide_manuellement';
+      mettreAJourStats();
+      renderOps(filterActif);
+    }
+
+    function validerTous() {
+      if (!confirm(`Valider toutes les ${operations.length} opérations ?`)) return;
+      operations.forEach(op => { op.valide = true; op.statut = op.statut === 'non_identifie' ? 'valide_manuellement' : op.statut; });
+      mettreAJourStats();
+      renderOps(filterActif);
+    }
+
+    // ── Modal attribution ──
+    const ADHERENTS_LISTE = ['ABLAIN Dominique','BEGUIN Allan','BOBER Deborah','BONARD Pascal','CARPENTIER T.','CAUMARTIN L.','CROGNIER D.','DEHESDIN A.','DERCOURT','DOGMONT','DOS SANTOS C.','DUMONT B.','DUPAYS C.','FERREIRA Philippe','FIOLET S.','FONTAINE J.B.','LANGLET','LEFEVRE R.','LEMOINE M.','LOURDEL Benoit','PREVOT','PRINGARBE S.','ROBILLARD Lindsay','ROUILLARD C.','SAUVE Jérémie','SOUILLARD','TANCHON D.','TEIXEIRA O.','THIERY S.'];
+
+    function ouvrirModal(idx) {
+      modalIdx = idx;
+      document.getElementById('modalLibelle').textContent = operations[idx]?.libelle || '';
+      const sel = document.getElementById('modalAdherent');
+      sel.innerHTML = '<option value="">— Sélectionner —</option>' + ADHERENTS_LISTE.map(a => `<option value="${a}">${a}</option>`).join('');
+      document.getElementById('modalAttrib').style.display = 'flex';
+    }
+
+    function fermerModal() { document.getElementById('modalAttrib').style.display = 'none'; modalIdx = null; }
+
+    function confirmerAttribution() {
+      const adherent = document.getElementById('modalAdherent').value;
+      if (!adherent || modalIdx === null) return;
+      operations[modalIdx].adherent = adherent;
+      operations[modalIdx].statut = 'valide_manuellement';
+      operations[modalIdx].valide = true;
+      fermerModal();
+      mettreAJourStats();
+      renderOps(filterActif);
+    }
+
+    // ── Bilan ──
+    function chargerBilan() {
+      const pointes = operations.filter(o => o.valide);
+      const total = pointes.reduce((s, o) => s + (o.credit || 0), 0);
+      document.getElementById('bilanTotal').textContent = total.toFixed(2) + ' €';
+      document.getElementById('bilanAJour').textContent = pointes.filter(o => o.adherent).length;
+      document.getElementById('bilanAttente').textContent = ADHERENTS_LISTE.length - pointes.filter(o => o.adherent).length;
+
+      const rows = ADHERENTS_LISTE.map(nom => {
+        const op = pointes.find(o => o.adherent?.toUpperCase().includes(nom.split(' ')[0].toUpperCase()));
+        return `<tr>
+          <td>${nom}</td>
+          <td>145,00 €</td>
+          <td>${op ? `<strong style="color:#28a745;">${(op.credit||0).toFixed(2)} €</strong>` : '—'}</td>
+          <td>${op?.date || '—'}</td>
+          <td>${op ? 'Virement / Chèque' : '—'}</td>
+          <td><span class="badge ${op ? 'badge-green' : 'badge-orange'}">${op ? '✅ Reçu' : '⏳ En attente'}</span></td>
+        </tr>`;
+      });
+      document.getElementById('bilanBody').innerHTML = rows.join('');
+    }
+
+    function exporterBilan() {
+      const rows = [['Adhérent','Attendu','Reçu','Date','Statut']];
+      ADHERENTS_LISTE.forEach(nom => {
+        const op = operations.find(o => o.valide && o.adherent?.toUpperCase().includes(nom.split(' ')[0].toUpperCase()));
+        rows.push([nom, '145', op ? (op.credit||0).toFixed(2) : '', op?.date||'', op ? 'Reçu' : 'En attente']);
+      });
+      const csv = rows.map(r => r.join(';')).join('\n');
+      const a = document.createElement('a');
+      a.href = 'data:text/csv;charset=utf-8,﻿' + encodeURIComponent(csv);
+      a.download = `bilan_cotisations_${new Date().toISOString().slice(0,10)}.csv`;
+      a.click();
+    }
+
+    // ── Adhérents ──
+    function chargerAdherents(filtre='') {
+      const liste = filtre ? ADHERENTS_LISTE.filter(a => a.toLowerCase().includes(filtre.toLowerCase())) : ADHERENTS_LISTE;
+      document.getElementById('adherentsBody2').innerHTML = liste.map(nom => {
+        const op = operations.find(o => o.valide && o.adherent?.toUpperCase().includes(nom.split(' ')[0].toUpperCase()));
+        return `<tr>
+          <td><strong>${nom.split(' ')[0]}</strong></td>
+          <td>${nom.split(' ').slice(1).join(' ')}</td>
+          <td>145,00 €</td>
+          <td>${op ? `<strong style="color:#28a745;">${(op.credit||0).toFixed(2)} €</strong>` : '—'}</td>
+          <td><span class="badge ${op ? 'badge-green' : 'badge-orange'}">${op ? '✅ À jour' : '⏳ En attente'}</span></td>
+        </tr>`;
+      }).join('');
+    }
+
+    function filtrerAdherents(v) { chargerAdherents(v); }
+
+    // ── Parser CSV local (fallback) ──
+    function parseCSVLocal(text) {
+      const ADHERENTS_REF = [
+        {noms:['ABLAIN','DOMINIQUE'],montant:145},{noms:['BEGUIN','ALLAN'],montant:145},
+        {noms:['BOBER','DEBORAH'],montant:145},{noms:['BONARD','PASCAL'],montant:145},
+        {noms:['CARPENTIER'],montant:145},{noms:['CAUMARTIN'],montant:145},
+        {noms:['CROGNIER'],montant:145},{noms:['DEHESDIN'],montant:145},
+        {noms:['DERCOURT'],montant:145},{noms:['DOGMONT'],montant:145},
+        {noms:['DOS SANTOS','SANTOS'],montant:145},{noms:['DUMONT'],montant:145},
+        {noms:['DUPAYS'],montant:145},{noms:['FERREIRA','PHILIPPE'],montant:145},
+        {noms:['FIOLET'],montant:145},{noms:['FONTAINE'],montant:110.5},
+        {noms:['LANGLET'],montant:145},{noms:['LEFEVRE'],montant:145},
+        {noms:['LEMOINE'],montant:145},{noms:['LOURDEL','BENOIT'],montant:145},
+        {noms:['PREVOT'],montant:145},{noms:['PRINGARBE'],montant:145},
+        {noms:['ROBILLARD','LINDSAY'],montant:145},{noms:['ROUILLARD'],montant:145},
+        {noms:['SAUVE','SAUVÉ','JEREMIE'],montant:145},{noms:['SOUILLARD'],montant:145},
+        {noms:['TANCHON'],montant:145},{noms:['TEIXEIRA'],montant:145},{noms:['THIERY'],montant:145},
+      ];
+      const lines = text.replace(/\r/g,'').split('\n').filter(l=>l.trim());
+      const ops = [];
+      for (const line of lines) {
+        const cols = line.split(/[;,]/).map(c=>c.replace(/^"|"$/g,'').trim());
+        if (cols.length < 3) continue;
+        const dm = cols[0]?.match(/^(\d{2})\/(\d{2})\/(\d{2,4})$/);
+        if (!dm) continue;
+        const [,d,m,y]=dm; const year=y.length===2?`20${y}`:y;
+        const debit=parseFloat((cols[2]||'').replace(/\s/g,'').replace(',','.'))||0;
+        const credit=parseFloat((cols[3]||'').replace(/\s/g,'').replace(',','.'))||0;
+        if (!debit && !credit) continue;
+        const libelle=cols[1]||'';
+        const lib=libelle.toUpperCase();
+        let adherent=null,montantAttendu=null,score=0;
+        for (const a of ADHERENTS_REF) {
+          if (a.noms.some(n=>lib.includes(n.toUpperCase()))) {
+            adherent=a.noms[0]; montantAttendu=a.montant;
+            score=Math.abs(credit-a.montant)<1?100:60; break;
+          }
+        }
+        const statut=!adherent?'non_identifie':score===100?'pointe_auto':'a_valider';
+        ops.push({date:`${year}-${m}-${d}`,libelle,debit,credit,montant:credit-debit,adherent,montantAttendu,statut,valide:statut==='pointe_auto'});
+      }
+      return ops;
+    }
+
+    function calculerStats(ops) {
+      return {
+        total: ops.length,
+        pointeAuto: ops.filter(o=>o.statut==='pointe_auto'||o.statut==='valide_manuellement').length,
+        aValider: ops.filter(o=>o.statut==='a_valider').length,
+        nonIdentifie: ops.filter(o=>o.statut==='non_identifie').length,
+        totalCredit: ops.reduce((s,o)=>s+(o.credit||0),0).toFixed(2),
+        totalDebit: ops.reduce((s,o)=>s+(o.debit||0),0).toFixed(2),
+      };
+    }
+
+    chargerAdherents();
+  </script>
+</body>
+</html>

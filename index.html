@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FO Métaux – Section Valeo Amiens</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="index.html" class="logo">
+        <img src="assets/img/logo.png" alt="FO Métaux Amiens" class="logo-img" />
+      </a>
+      <nav class="main-nav" id="mainNav">
+        <a href="index.html" class="nav-link active"><i class="fas fa-home"></i> Accueil</a>
+        <a href="#actus" class="nav-link"><i class="fas fa-newspaper"></i> Actus</a>
+        <a href="#reseaux" class="nav-link"><i class="fas fa-share-alt"></i> Réseaux</a>
+        <a href="#documents" class="nav-link"><i class="fas fa-folder"></i> Documents</a>
+        <a href="#contact" class="nav-link"><i class="fas fa-envelope"></i> Contact</a>
+      </nav>
+      <div class="header-actions">
+        <a href="login.html" class="btn btn-outline-white"><i class="fas fa-user"></i> Connexion</a>
+        <button class="hamburger" id="hamburger" aria-label="Menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <h1>Défendre vos droits,<br>ensemble</h1>
+      <p>FO Métaux Valeo Amiens — votre syndicat au service des salariés</p>
+      <div class="hero-cta">
+        <a href="login.html" class="btn btn-red">Mon espace adhérent</a>
+        <a href="#contact" class="btn btn-outline-white">Nous rejoindre</a>
+      </div>
+    </div>
+    <div class="hero-chatbot">
+      <div class="chatbot-bubble">
+        <p>👋 Bonjour ! Vous pouvez consulter vos cotisations et les dernières actualités en vous connectant à votre espace adhérent.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- RÉSEAUX SOCIAUX -->
+  <section class="section section-dark" id="reseaux">
+    <div class="container">
+      <h2 class="section-title">Dernières <span class="text-red">Publications</span></h2>
+      <div class="social-feed" id="socialFeed">
+        <div class="feed-loading"><i class="fas fa-spinner fa-spin"></i> Chargement...</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ACTUS -->
+  <section class="section" id="actus">
+    <div class="container">
+      <h2 class="section-title">Dernières <span class="text-red">Actualités</span></h2>
+      <div class="actus-grid" id="actusGrid">
+        <div class="actu-card skeleton"></div>
+        <div class="actu-card skeleton"></div>
+        <div class="actu-card skeleton"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DOCUMENTS PUBLICS -->
+  <section class="section" id="documents">
+    <div class="container">
+      <h2 class="section-title">Documents <span class="text-red">Publics</span></h2>
+      <p class="section-desc">Téléchargez le formulaire d'adhésion et rejoignez FO Métaux Valeo Amiens.</p>
+      <div class="docs-grid" id="publicDocsGrid">
+        <div class="doc-card">
+          <i class="fas fa-file-signature doc-icon text-red"></i>
+          <div class="doc-info">
+            <h3>Formulaire d'adhésion</h3>
+            <p>Rejoignez FO Métaux – à imprimer et remettre à un délégué</p>
+          </div>
+          <a href="#" class="btn btn-sm btn-red"><i class="fas fa-download"></i> Télécharger</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section class="section section-dark" id="contact">
+    <div class="container">
+      <h2 class="section-title">Nous <span class="text-red">Rejoindre</span></h2>
+      <div class="contact-grid">
+        <div class="contact-info">
+          <div class="contact-item"><i class="fas fa-map-marker-alt text-red"></i><span>Valeo – Site d'Amiens</span></div>
+          <div class="contact-item"><i class="fas fa-envelope text-red"></i><span id="contactEmail">fo.metaux.valeo.amiens@gmail.com</span></div>
+          <div class="contact-item"><i class="fas fa-clock text-red"></i><span>Permanence : Mercredi 12h–13h</span></div>
+        </div>
+        <form class="contact-form" id="contactForm">
+          <input type="text" placeholder="Votre nom" required />
+          <input type="email" placeholder="Votre email" required />
+          <textarea placeholder="Votre message ou demande d'adhésion..." rows="4" required></textarea>
+          <button type="submit" class="btn btn-red">Envoyer <i class="fas fa-paper-plane"></i></button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-logo">
+        <img src="assets/img/logo.png" alt="FO Métaux Amiens" class="logo-img-footer" />
+        <p>Section Valeo Amiens<br>Syndicat FO Métaux</p>
+      </div>
+      <div class="footer-links">
+        <h4>Navigation</h4>
+        <a href="index.html">Accueil</a>
+        <a href="#actus">Actualités</a>
+        <a href="#reseaux">Réseaux sociaux</a>
+        <a href="login.html">Espace adhérent</a>
+      </div>
+      <div class="footer-links">
+        <h4>Légal</h4>
+        <a href="#">Mentions légales</a>
+        <a href="#">Protection des données</a>
+        <a href="#">Plan du site</a>
+      </div>
+      <div class="footer-social">
+        <h4>Suivez-nous</h4>
+        <div class="social-icons">
+          <a href="#" class="social-icon instagram"><i class="fab fa-instagram"></i></a>
+          <a href="#" class="social-icon facebook"><i class="fab fa-facebook-f"></i></a>
+          <a href="#" class="social-icon whatsapp"><i class="fab fa-whatsapp"></i></a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2024 FO Métaux – Section Valeo Amiens. Tous droits réservés.</p>
+    </div>
+  </footer>
+
+  <!-- CHATBOT WIDGET -->
+  <div class="chatbot-widget" id="chatbotWidget">
+    <button class="chatbot-toggle" id="chatbotToggle" aria-label="Assistant">
+      <i class="fas fa-comments"></i>
+    </button>
+    <div class="chatbot-panel" id="chatbotPanel" style="display:none">
+      <div class="chatbot-header">
+        <span><i class="fas fa-robot"></i> Assistant FO</span>
+        <button onclick="toggleChatbot()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="chatbot-messages" id="chatMessages">
+        <div class="chat-msg bot">👋 Bonjour ! Je peux vous aider. Connectez-vous pour accéder à vos informations personnelles.</div>
+      </div>
+      <div class="chatbot-input">
+        <input type="text" id="chatInput" placeholder="Posez votre question..." />
+        <button onclick="sendChat()"><i class="fas fa-paper-plane"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

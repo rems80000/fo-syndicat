@@ -1,0 +1,12 @@
+# Fichiers sensibles - NE JAMAIS publier
+backend/.env
+backend/service-account.json
+backend/node_modules/
+
+# Système
+.DS_Store
+desktop.ini
+Thumbs.db
+
+# Local Netlify folder
+.netlify

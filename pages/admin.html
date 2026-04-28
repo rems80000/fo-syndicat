@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Administration – FO Métaux Valeo Amiens</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../index.html" class="logo">
+        <img src="../assets/img/logo.png" alt="FO Métaux Amiens" class="logo-img" />
+      </a>
+      <div class="header-actions">
+        <span style="color:#f0ad4e;font-size:.8rem;font-weight:700;"><i class="fas fa-shield-alt"></i> Administration</span>
+        <button onclick="Auth.logout()" class="btn btn-outline-white btn-sm"><i class="fas fa-sign-out-alt"></i> Déconnexion</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar" id="avatarInitials" style="background:#f0ad4e;color:#000;">--</div>
+        <div class="sidebar-user-name" id="sidebarName">Chargement...</div>
+        <div class="sidebar-user-role" style="color:#f0ad4e;"><i class="fas fa-shield-alt" style="font-size:.6rem;"></i> Administrateur</div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="sidebar-nav-item active" onclick="showSection('dashboard')"><i class="fas fa-tachometer-alt"></i> Tableau de bord</div>
+        <div class="sidebar-nav-item" onclick="showSection('adherents')"><i class="fas fa-users"></i> Adhérents</div>
+        <div class="sidebar-nav-item" onclick="showSection('cotisations')"><i class="fas fa-euro-sign"></i> Cotisations</div>
+        <div class="sidebar-nav-item" onclick="showSection('documents')"><i class="fas fa-folder-open"></i> Documents admin</div>
+        <div class="sidebar-nav-item" onclick="showSection('gdrive')"><i class="fab fa-google-drive"></i> Google Drive</div>
+        <div class="sidebar-nav-item" onclick="showSection('utilisateurs')"><i class="fas fa-user-cog"></i> Utilisateurs</div>
+      </nav>
+      <div class="sidebar-logout">
+        <button onclick="Auth.logout()" class="btn btn-outline-white btn-sm" style="width:100%">
+          <i class="fas fa-sign-out-alt"></i> Déconnexion
+        </button>
+      </div>
+    </aside>
+
+    <main class="dashboard-main">
+      <!-- DASHBOARD -->
+      <div id="section-dashboard">
+        <h1 class="dashboard-title">Tableau de bord</h1>
+        <p class="dashboard-subtitle">Vue d'ensemble de la section FO Métaux Valeo Amiens</p>
+
+        <div class="cards-row">
+          <div class="info-card">
+            <div class="info-card-label">Adhérents actifs</div>
+            <div class="info-card-value">87</div>
+            <div class="info-card-sub">+3 ce mois-ci</div>
+          </div>
+          <div class="info-card">
+            <div class="info-card-label">À jour cotisations</div>
+            <div class="info-card-value">79</div>
+            <div class="info-card-sub"><span class="badge badge-green">91%</span></div>
+          </div>
+          <div class="info-card">
+            <div class="info-card-label">En retard</div>
+            <div class="info-card-value">8</div>
+            <div class="info-card-sub"><span class="badge badge-orange">9%</span></div>
+          </div>
+          <div class="info-card">
+            <div class="info-card-label">Recettes 2024</div>
+            <div class="info-card-value">8 554 €</div>
+            <div class="info-card-sub">sur 4 mois</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+          <div class="panel">
+            <div class="panel-title"><i class="fas fa-chart-pie"></i> Taux d'adhésion</div>
+            <div style="text-align:center;padding:20px 0;">
+              <div style="font-size:3.5rem;font-weight:900;color:#cc0000;">91%</div>
+              <p style="color:#666;font-size:.9rem;">des salariés éligibles sont adhérents FO</p>
+              <div class="progress-bar-wrap" style="margin-top:16px;">
+                <div class="progress-bar" style="width:91%;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-title"><i class="fas fa-bell"></i> Alertes</div>
+            <div style="display:flex;flex-direction:column;gap:12px;">
+              <div style="padding:12px;background:#fff3cd;border-radius:8px;border-left:4px solid #ffc107;font-size:.88rem;">
+                <strong>8 adhérents</strong> n'ont pas réglé leurs cotisations d'avril.
+              </div>
+              <div style="padding:12px;background:#d4edda;border-radius:8px;border-left:4px solid #28a745;font-size:.88rem;">
+                AG du 15 mai : <strong>42 confirmations</strong> reçues sur 87 invitations.
+              </div>
+              <div style="padding:12px;background:#f8d7da;border-radius:8px;border-left:4px solid #dc3545;font-size:.88rem;">
+                Renouvellement statuts <strong>dû avant le 1er juin</strong>.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ADHÉRENTS -->
+      <div id="section-adherents" style="display:none">
+        <h1 class="dashboard-title">Gestion des adhérents</h1>
+        <p class="dashboard-subtitle">Liste complète — données issues de Google Sheets</p>
+        <div class="panel">
+          <div class="panel-title" style="justify-content:space-between;">
+            <span><i class="fas fa-users"></i> Adhérents (87)</span>
+            <div style="display:flex;gap:8px;">
+              <input type="text" placeholder="Rechercher..." style="padding:6px 12px;border:1px solid #ddd;border-radius:6px;font-size:.85rem;" oninput="filterTable(this.value)" />
+              <button class="btn btn-sm btn-red" onclick="exportCSV()"><i class="fas fa-download"></i> Export CSV</button>
+              <button class="btn btn-sm btn-outline-red" onclick="syncSheets()"><i class="fab fa-google"></i> Sync Sheets</button>
+            </div>
+          </div>
+          <div class="table-container">
+            <table id="adherentsTable">
+              <thead><tr><th>Matricule</th><th>Nom</th><th>Prénom</th><th>Service</th><th>Statut cotis.</th><th>Depuis</th><th>Actions</th></tr></thead>
+              <tbody id="adherentsBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- COTISATIONS GLOBALES -->
+      <div id="section-cotisations" style="display:none">
+        <h1 class="dashboard-title">Suivi des cotisations</h1>
+        <p class="dashboard-subtitle">Vue consolidée de toutes les cotisations 2024</p>
+        <div class="panel">
+          <div class="panel-title"><i class="fas fa-chart-bar"></i> Progression mensuelle 2024</div>
+          <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:16px;" id="monthsGrid"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-title" style="justify-content:space-between;">
+            <span><i class="fas fa-list"></i> Détail par adhérent</span>
+            <button class="btn btn-sm btn-outline-red" onclick="syncSheets()"><i class="fab fa-google"></i> Actualiser depuis Sheets</button>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead><tr><th>Matricule</th><th>Nom</th><th>Jan</th><th>Fév</th><th>Mar</th><th>Avr</th><th>Total</th><th>Statut</th></tr></thead>
+              <tbody id="cotisBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- DOCUMENTS ADMIN -->
+      <div id="section-documents" style="display:none">
+        <h1 class="dashboard-title">Documents administratifs</h1>
+        <p class="dashboard-subtitle">Accès restreint aux administrateurs identifiés</p>
+
+        <div class="panel">
+          <div class="panel-title"><i class="fas fa-upload"></i> Ajouter un document</div>
+          <form class="publish-form" style="max-width:600px;">
+            <div class="form-row">
+              <div><label class="form-label">Nom du document</label><input type="text" placeholder="Statuts 2024..." /></div>
+              <div><label class="form-label">Catégorie</label>
+                <select><option>Statuts juridiques</option><option>Comptes-rendus AG</option><option>Trésorerie</option><option>Correspondances</option><option>Accords signés</option></select>
+              </div>
+            </div>
+            <div><label class="form-label">Lien Google Drive (partagé en lecture)</label><input type="text" placeholder="https://drive.google.com/file/..." /></div>
+            <div><label class="form-label">Visibilité</label>
+              <select>
+                <option value="admin">Administrateurs uniquement</option>
+                <option value="secretaire">Secrétaire + Admins</option>
+                <option value="membre">Tous les adhérents</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-red"><i class="fas fa-save"></i> Enregistrer</button>
+          </form>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title"><i class="fas fa-folder"></i> Documents enregistrés</div>
+          <div class="docs-grid">
+            <!-- Statuts & juridique -->
+            <div class="doc-card">
+              <i class="fas fa-file-pdf doc-icon text-red"></i>
+              <div class="doc-info"><h3>Statuts FO Métaux Valeo Amiens</h3><p>Statuts juridiques de la section · Admins</p></div>
+              <div style="display:flex;gap:8px;flex-shrink:0;">
+                <a href="#" class="btn btn-sm btn-outline-red"><i class="fas fa-download"></i></a>
+                <button class="btn btn-sm btn-outline-red"><i class="fas fa-trash"></i></button>
+              </div>
+            </div>
+            <div class="doc-card">
+              <i class="fas fa-file-pdf doc-icon text-red"></i>
+              <div class="doc-info"><h3>Arrêt Cour de cassation</h3><p>Jurisprudence · Admins</p></div>
+              <div style="display:flex;gap:8px;flex-shrink:0;">
+                <a href="#" class="btn btn-sm btn-outline-red"><i class="fas fa-download"></i></a>
+                <button class="btn btn-sm btn-outline-red"><i class="fas fa-trash"></i></button>
+              </div>
+            </div>
+            <div class="doc-card">
+              <i class="fas fa-file-pdf doc-icon text-red"></i>
+              <div class="doc-info"><h3>Publication comptes 2023 – JORF</h3><p>Journal Officiel · Admins</p></div>
+              <div style="display:flex;gap:8px;flex-shrink:0;">
+                <a href="#" class="btn btn-sm btn-outline-red"><i class="fas fa-download"></i></a>
+                <button class="btn btn-sm btn-outline-red"><i class="fas fa-trash"></i></button>
+              </div>
+            </div>
+            <!-- AG -->
+            <div class="doc-card">
+              <i class="fas fa-file-alt doc-icon text-red"></i>
+              <div class="doc-info"><h3>PV AG novembre 2023 (exercice 2022)</h3><p>Assemblée Générale · Adhérents</p></div>
+              <div style="display:flex;gap:8px;flex-shrink:0;">
+                <a href="#" class="btn btn-sm btn-outline-red"><i class="fas fa-download"></i></a>
+                <button class="btn btn-sm btn-outline-red"><i class="fas fa-trash"></i></button>
+              </div>
+            </div>
+            <div class="doc-card">
+              <i class="fas fa-file-alt doc-icon text-red"></i>
+              <div class="doc-info"><h3>PV AG novembre 2022 (exercice 2021)</h3><p>Assemblée Générale · Adhérents</p></div>
+              <div style="display:flex;gap:8px;flex-shrink:0;">
+                <a href="#" class="btn btn-sm btn-outline-red"><i class="fas fa-download"></i></a>
+                <button class="btn btn-sm btn-outline-red"><i class="fas fa-trash"></i></button>
+              </div>
+            </div>
+            <div class="doc-card">
+              <i class="fas fa-file-pdf doc-icon text-red"></i>
+              <div class="doc-info"><h3>Rapport d'activité – exercice 2023</h3><p>AG 2024 · Adhérents</p></div>
+              <div style="display:flex;gap:8px;flex-shrink:0;">
+                <a href="#" class="btn btn-sm btn-outline-red"><i class="fas fa-download"></i></a>
+                <button class="btn btn-sm btn-outline-red"><i class="fas fa-trash"></i></button>
+              </div>
+            </div>
+            <!-- Trésorerie -->
+            <div class="doc-card">
+              <i class="fas fa-file-pdf doc-icon text-red"></i>
+              <div class="doc-info"><h3>Bilan financier 2023 – Valeo Amiens</h3><p>Trésorerie · Admins</p></div>
+              <div style="display:flex;gap:8px;flex-shrink:0;">
+                <a href="#" class="btn btn-sm btn-outline-red"><i class="fas fa-download"></i></a>
+                <button class="btn btn-sm btn-outline-red"><i class="fas fa-trash"></i></button>
+              </div>
+            </div>
+            <div class="doc-card">
+              <i class="fas fa-file-excel doc-icon text-red"></i>
+              <div class="doc-info"><h3>Trésorerie FO Métaux Valeo Amiens (Google Sheets)</h3><p>Suivi cotisations live · Admins</p></div>
+              <div style="display:flex;gap:8px;flex-shrink:0;">
+                <a href="https://docs.google.com/spreadsheets" target="_blank" class="btn btn-sm btn-outline-red"><i class="fas fa-external-link-alt"></i></a>
+              </div>
+            </div>
+            <!-- Élections -->
+            <div class="doc-card">
+              <i class="fas fa-vote-yea doc-icon text-red"></i>
+              <div class="doc-info"><h3>Flash Info – Résultats élections 2023</h3><p>Représentativité · Adhérents</p></div>
+              <div style="display:flex;gap:8px;flex-shrink:0;">
+                <a href="#" class="btn btn-sm btn-outline-red"><i class="fas fa-download"></i></a>
+                <button class="btn btn-sm btn-outline-red"><i class="fas fa-trash"></i></button>
+              </div>
+            </div>
+            <div class="doc-card">
+              <i class="fas fa-vote-yea doc-icon text-red"></i>
+              <div class="doc-info"><h3>Flash Info – Représentativité après élections 2023</h3><p>Résultats officiels · Adhérents</p></div>
+              <div style="display:flex;gap:8px;flex-shrink:0;">
+                <a href="#" class="btn btn-sm btn-outline-red"><i class="fas fa-download"></i></a>
+                <button class="btn btn-sm btn-outline-red"><i class="fas fa-trash"></i></button>
+              </div>
+            </div>
+            <!-- Cotisations -->
+            <div class="doc-card">
+              <i class="fas fa-file-pdf doc-icon text-red"></i>
+              <div class="doc-info"><h3>Circulaire montant cotisations 2024</h3><p>Fédération Métallurgie · Admins</p></div>
+              <div style="display:flex;gap:8px;flex-shrink:0;">
+                <a href="#" class="btn btn-sm btn-outline-red"><i class="fas fa-download"></i></a>
+                <button class="btn btn-sm btn-outline-red"><i class="fas fa-trash"></i></button>
+              </div>
+            </div>
+            <div class="doc-card">
+              <i class="fas fa-file-pdf doc-icon text-red"></i>
+              <div class="doc-info"><h3>Récépissé dépôt des comptes – exercice 2023</h3><p>DEETS · Admins</p></div>
+              <div style="display:flex;gap:8px;flex-shrink:0;">
+                <a href="#" class="btn btn-sm btn-outline-red"><i class="fas fa-download"></i></a>
+                <button class="btn btn-sm btn-outline-red"><i class="fas fa-trash"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GOOGLE DRIVE -->
+      <div id="section-gdrive" style="display:none">
+        <h1 class="dashboard-title">Google Drive</h1>
+        <p class="dashboard-subtitle">Fichiers partagés de la section FO Métaux Valeo Amiens.</p>
+
+        <div class="panel">
+          <div class="panel-title" style="justify-content:space-between;">
+            <span><i class="fab fa-google-drive" style="color:#4285f4"></i> Fichiers Drive</span>
+            <div style="display:flex;gap:10px;align-items:center;">
+              <span id="driveStatus" style="font-size:.8rem;color:#aaa;"></span>
+              <button class="btn btn-sm btn-outline-red" onclick="loadDriveFiles()">
+                <i class="fas fa-sync-alt"></i> Actualiser
+              </button>
+              <a href="https://drive.google.com/drive/folders/1JqfB4ojCVC3gZoMuO6cc-demOYHawz4M"
+                 target="_blank" class="btn btn-sm btn-dark">
+                <i class="fab fa-google-drive"></i> Ouvrir dans Drive
+              </a>
+            </div>
+          </div>
+          <div id="driveFilesList">
+            <div style="text-align:center;padding:40px;color:#aaa;">
+              <i class="fas fa-spinner fa-spin" style="font-size:2rem;margin-bottom:12px;display:block;"></i>
+              Chargement des fichiers...
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title"><i class="fas fa-check-circle" style="color:#28a745"></i> Connexion active</div>
+          <div style="font-size:.88rem;color:#666;line-height:1.8;">
+            <p>✅ Le backend est connecté à Google Drive via le compte de service :</p>
+            <p style="margin-top:8px;"><code>fo-backend@fo-metaux-valeo-amiens.iam.gserviceaccount.com</code></p>
+            <p style="margin-top:8px;">Dossier Drive : <code>1JqfB4ojCVC3gZoMuO6cc-demOYHawz4M</code></p>
+            <p style="margin-top:8px;">Google Sheet trésorerie : <code>19jHe8Ysilh622yU-u_Wvg-pFvyQs7WuBA2te3A0SKkI</code></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- UTILISATEURS -->
+      <div id="section-utilisateurs" style="display:none">
+        <h1 class="dashboard-title">Gestion des accès</h1>
+        <p class="dashboard-subtitle">Gérez les rôles et les droits des utilisateurs</p>
+        <div class="panel">
+          <div class="panel-title" style="justify-content:space-between;">
+            <span><i class="fas fa-user-cog"></i> Utilisateurs</span>
+            <button class="btn btn-sm btn-red"><i class="fas fa-plus"></i> Ajouter</button>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead><tr><th>Nom</th><th>Email</th><th>Rôle</th><th>Dernier accès</th><th>Actions</th></tr></thead>
+              <tbody>
+                <tr><td>Pierre Lambert</td><td>admin@demo.fr</td><td><span class="badge badge-orange">Admin</span></td><td>Aujourd'hui</td><td><button class="btn btn-sm btn-outline-red">Modifier</button></td></tr>
+                <tr><td>Marie Martin</td><td>secretaire@demo.fr</td><td><span class="badge" style="background:#cce5ff;color:#004085;">Secrétaire</span></td><td>Hier</td><td><button class="btn btn-sm btn-outline-red">Modifier</button></td></tr>
+                <tr><td>Jean Dupont</td><td>membre@demo.fr</td><td><span class="badge badge-green">Adhérent</span></td><td>24 Avr</td><td><button class="btn btn-sm btn-outline-red">Modifier</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../js/auth.js"></script>
+  <script>
+    const user = Auth.requireAuth(['admin']);
+    if (user) {
+      document.getElementById('sidebarName').textContent = user.name;
+      document.getElementById('avatarInitials').textContent = user.name.split(' ').map(n=>n[0]).join('');
+    }
+
+    function showSection(id) {
+      document.querySelectorAll('.dashboard-main > div').forEach(d => d.style.display = 'none');
+      document.getElementById('section-'+id).style.display = 'block';
+      document.querySelectorAll('.sidebar-nav-item').forEach(i => i.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+      if (id === 'adherents') loadAdherents();
+      if (id === 'cotisations') loadCotisations();
+    }
+
+    // Adhérents issus des bulletins d'adhésion (Google Drive)
+    const ADHERENTS = [
+      { mat:'V-001', nom:'ABLAIN',    prenom:'Dominique', service:'Production',   statut:'payé',   depuis:'2024' },
+      { mat:'V-002', nom:'BEGUIN',    prenom:'Allan',      service:'Fabrication',  statut:'payé',   depuis:'2022' },
+      { mat:'V-003', nom:'BOBER',     prenom:'Deborah',    service:'Logistique',   statut:'payé',   depuis:'2024' },
+      { mat:'V-004', nom:'BONARD',    prenom:'Pascal',     service:'Maintenance',  statut:'retard', depuis:'2024' },
+      { mat:'V-005', nom:'CARPENTIER',prenom:'T.',         service:'Qualité',      statut:'payé',   depuis:'2023' },
+      { mat:'V-006', nom:'CAUMARTIN', prenom:'L.',         service:'Production',   statut:'payé',   depuis:'2022' },
+      { mat:'V-007', nom:'CROGNIER',  prenom:'D.',         service:'Fabrication',  statut:'payé',   depuis:'2022' },
+      { mat:'V-008', nom:'DEHESDIN',  prenom:'A.',         service:'Maintenance',  statut:'payé',   depuis:'2023' },
+      { mat:'V-009', nom:'DERCOURT',  prenom:'—',          service:'Production',   statut:'payé',   depuis:'2024' },
+      { mat:'V-010', nom:'DOGMONT',   prenom:'—',          service:'Logistique',   statut:'payé',   depuis:'2024' },
+      { mat:'V-011', nom:'DOS SANTOS',prenom:'C.',         service:'Fabrication',  statut:'payé',   depuis:'2023' },
+      { mat:'V-012', nom:'DUMONT',    prenom:'B.',         service:'Qualité',      statut:'payé',   depuis:'2023' },
+      { mat:'V-013', nom:'DUPAYS',    prenom:'C.',         service:'Maintenance',  statut:'payé',   depuis:'2023' },
+      { mat:'V-014', nom:'FERREIRA',  prenom:'Philippe',   service:'Production',   statut:'payé',   depuis:'2023' },
+      { mat:'V-015', nom:'FIOLET',    prenom:'S.',         service:'RH',           statut:'payé',   depuis:'2023' },
+      { mat:'V-016', nom:'FONTAINE',  prenom:'J.B.',       service:'Fabrication',  statut:'payé',   depuis:'2024' },
+      { mat:'V-017', nom:'LANGLET',   prenom:'—',          service:'Logistique',   statut:'payé',   depuis:'2024' },
+      { mat:'V-018', nom:'LEFEVRE',   prenom:'R.',         service:'Production',   statut:'payé',   depuis:'2023' },
+      { mat:'V-019', nom:'LEMOINE',   prenom:'M.',         service:'Maintenance',  statut:'payé',   depuis:'2023' },
+      { mat:'V-020', nom:'LOURDEL',   prenom:'Benoit',     service:'Qualité',      statut:'payé',   depuis:'2024' },
+      { mat:'V-021', nom:'PREVOT',    prenom:'—',          service:'Fabrication',  statut:'payé',   depuis:'2024' },
+      { mat:'V-022', nom:'PRINGARBE', prenom:'S.',         service:'Production',   statut:'payé',   depuis:'2023' },
+      { mat:'V-023', nom:'ROBILLARD', prenom:'Lindsay',    service:'RH',           statut:'payé',   depuis:'2023' },
+      { mat:'V-024', nom:'ROUILLARD', prenom:'C.',         service:'Logistique',   statut:'payé',   depuis:'2023' },
+      { mat:'V-025', nom:'SAUVE',     prenom:'Jérémie',    service:'Fabrication',  statut:'payé',   depuis:'2025' },
+      { mat:'V-026', nom:'SOUILLARD', prenom:'—',          service:'Production',   statut:'retard', depuis:'2024' },
+      { mat:'V-027', nom:'TANCHON',   prenom:'D.',         service:'Maintenance',  statut:'payé',   depuis:'2023' },
+      { mat:'V-028', nom:'TEIXEIRA',  prenom:'O.',         service:'Qualité',      statut:'payé',   depuis:'2023' },
+      { mat:'V-029', nom:'THIERY',    prenom:'S.',         service:'Fabrication',  statut:'payé',   depuis:'2023' },
+    ];
+
+    function loadAdherents(filter='') {
+      const list = filter ? ADHERENTS.filter(a => (a.nom+a.prenom+a.mat+a.service).toLowerCase().includes(filter.toLowerCase())) : ADHERENTS;
+      document.getElementById('adherentsBody').innerHTML = list.map(a => `
+        <tr>
+          <td><code>${a.mat}</code></td>
+          <td>${a.nom}</td>
+          <td>${a.prenom}</td>
+          <td>${a.service}</td>
+          <td><span class="badge ${a.statut==='payé'?'badge-green':'badge-orange'}">${a.statut==='payé'?'À jour':'En retard'}</span></td>
+          <td>${a.depuis}</td>
+          <td><button class="btn btn-sm btn-outline-red">Fiche</button></td>
+        </tr>`).join('');
+    }
+
+    function filterTable(val) { loadAdherents(val); }
+
+    function loadCotisations() {
+      const months = ['Jan','Fév','Mar','Avr','Mai','Jun'];
+      const amounts = [2136, 2136, 2160, 2136, 0, 0];
+      document.getElementById('monthsGrid').innerHTML = months.map((m,i) => `
+        <div style="text-align:center;padding:16px;background:${amounts[i]?'#d4edda':'#f8d7da'};border-radius:8px;">
+          <div style="font-weight:700;">${m}</div>
+          <div style="font-size:.9rem;color:#555;">${amounts[i]?amounts[i]+' €':'—'}</div>
+        </div>`).join('');
+
+      document.getElementById('cotisBody').innerHTML = ADHERENTS.map(a => `
+        <tr>
+          <td><code>${a.mat}</code></td>
+          <td>${a.nom} ${a.prenom}</td>
+          <td><span class="badge badge-green">✓</span></td>
+          <td><span class="badge badge-green">✓</span></td>
+          <td><span class="badge badge-green">✓</span></td>
+          <td><span class="badge ${a.statut==='payé'?'badge-green':'badge-orange'}">${a.statut==='payé'?'✓':'—'}</span></td>
+          <td>${a.statut==='payé'?'98,00 €':'73,50 €'}</td>
+          <td><span class="badge ${a.statut==='payé'?'badge-green':'badge-orange'}">${a.statut==='payé'?'À jour':'Retard'}</span></td>
+        </tr>`).join('');
+    }
+
+    function exportCSV() {
+      const rows = [['Matricule','Nom','Prénom','Service','Statut','Depuis'],...ADHERENTS.map(a=>[a.mat,a.nom,a.prenom,a.service,a.statut,a.depuis])];
+      const csv = rows.map(r=>r.join(';')).join('\n');
+      const a = document.createElement('a');
+      a.href = 'data:text/csv;charset=utf-8,﻿'+encodeURIComponent(csv);
+      a.download = 'adherents_fo_valeo.csv';
+      a.click();
+    }
+
+    function syncSheets() { loadAdherents(); alert('✅ Données rechargées.'); }
+
+    const API = 'https://fo-syndicat-backend-production.up.railway.app';
+    const MIME_ICONS = {
+      'application/pdf': 'fa-file-pdf',
+      'application/vnd.google-apps.spreadsheet': 'fa-file-excel',
+      'application/vnd.google-apps.document': 'fa-file-word',
+      'application/vnd.google-apps.presentation': 'fa-file-powerpoint',
+      'image/jpeg': 'fa-file-image', 'image/png': 'fa-file-image',
+      'application/msword': 'fa-file-word',
+    };
+
+    async function loadDriveFiles() {
+      const el = document.getElementById('driveFilesList');
+      const status = document.getElementById('driveStatus');
+      el.innerHTML = '<div style="text-align:center;padding:40px;color:#aaa;"><i class="fas fa-spinner fa-spin" style="font-size:2rem;display:block;margin-bottom:12px;"></i>Chargement...</div>';
+      try {
+        const token = Auth.getToken();
+        const res = await fetch(`${API}/api/documents/drive`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        });
+        if (!res.ok) throw new Error(`Erreur ${res.status}`);
+        const { files } = await res.json();
+        status.textContent = `${files.length} fichier(s) trouvé(s)`;
+        if (!files.length) { el.innerHTML = '<p style="text-align:center;color:#aaa;padding:24px;">Aucun fichier trouvé dans le dossier Drive.</p>'; return; }
+        el.innerHTML = `<div class="docs-grid">${files.map(f => {
+          const icon = MIME_ICONS[f.mimeType] || 'fa-file-alt';
+          const date = f.modifiedTime ? new Date(f.modifiedTime).toLocaleDateString('fr-FR') : '';
+          return `<div class="doc-card">
+            <i class="fas ${icon} doc-icon text-red"></i>
+            <div class="doc-info"><h3>${f.name}</h3><p>${date}</p></div>
+            ${f.webViewLink ? `<a href="${f.webViewLink}" target="_blank" class="btn btn-sm btn-outline-red"><i class="fas fa-external-link-alt"></i></a>` : ''}
+          </div>`;
+        }).join('')}</div>`;
+      } catch(e) {
+        status.textContent = '';
+        el.innerHTML = `<div style="padding:20px;background:#fff3cd;border-radius:8px;font-size:.88rem;">
+          <strong>⚠️ Drive non accessible :</strong> ajoutez les variables d'environnement dans Railway
+          (GOOGLE_SHEET_ID, GOOGLE_DRIVE_FOLDER_ID) et le fichier service-account.json.
+          <br><br><a href="https://drive.google.com/drive/folders/1JqfB4ojCVC3gZoMuO6cc-demOYHawz4M"
+          target="_blank" class="btn btn-sm btn-outline-red" style="margin-top:8px;">
+          <i class="fab fa-google-drive"></i> Ouvrir Drive directement</a>
+        </div>`;
+      }
+    }
+
+    // Charger Drive quand on clique sur la section
+    document.querySelector('[onclick="showSection(\'gdrive\')"]')?.addEventListener('click', () => {
+      setTimeout(loadDriveFiles, 100);
+    });
+  </script>
+</body>
+</html>
