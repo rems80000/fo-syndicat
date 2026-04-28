@@ -16,6 +16,7 @@
       </a>
       <nav class="main-nav" id="mainNav">
         <a href="index.html" class="nav-link active"><i class="fas fa-home"></i> Accueil</a>
+        <a href="#flash" class="nav-link"><i class="fas fa-bolt"></i> Flash Info</a>
         <a href="#actus" class="nav-link"><i class="fas fa-newspaper"></i> Actus</a>
         <a href="#reseaux" class="nav-link"><i class="fas fa-share-alt"></i> Réseaux</a>
         <a href="#documents" class="nav-link"><i class="fas fa-folder"></i> Documents</a>
@@ -107,6 +108,18 @@
         </div>
 
       </div><!-- /social-live-grid -->
+    </div>
+  </section>
+
+  <!-- FLASH INFO -->
+  <section class="section section-grey" id="flash">
+    <div class="container">
+      <h2 class="section-title">Flash <span class="text-red">Info</span></h2>
+      <p class="section-desc" style="text-align:center;margin-bottom:28px;">
+        Actualités rapides, conseils pratiques et alertes pour les salariés de la métallurgie et de l'automobile
+        en <strong>Hauts-de-France</strong> · <strong>Somme</strong> · <strong>Picardie</strong>
+      </p>
+      <div id="flashInfoSection"></div>
     </div>
   </section>
 
@@ -221,6 +234,10 @@
   </script>
 
   <script src="js/auth.js"></script>
+  <script src="js/flash-info.js"></script>
   <script src="js/app.js"></script>
+  <script>
+    loadFlashInfo('flashInfoSection', { max: 6, showFilter: true, showTicker: true });
+  </script>
 </body>
 </html>

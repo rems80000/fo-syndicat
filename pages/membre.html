@@ -118,11 +118,22 @@
         </div>
       </div>
 
-      <!-- ACTUS -->
+      <!-- ACTUS + FLASH INFO -->
       <div id="section-actus" style="display:none">
-        <h1 class="dashboard-title">Actualités</h1>
-        <p class="dashboard-subtitle">Les dernières nouvelles de votre section</p>
-        <div class="actus-grid" id="membreActusGrid"></div>
+        <h1 class="dashboard-title">Actualités & Flash Info</h1>
+        <p class="dashboard-subtitle">Dernières nouvelles de la section et informations pratiques pour les salariés de la métallurgie</p>
+
+        <!-- Actus section -->
+        <div class="panel" style="margin-bottom:24px;">
+          <div class="panel-title"><i class="fas fa-newspaper"></i> Actualités de la section</div>
+          <div class="actus-grid" id="membreActusGrid" style="margin-top:0;"></div>
+        </div>
+
+        <!-- Flash info -->
+        <div class="panel">
+          <div class="panel-title"><i class="fas fa-bolt" style="color:#cc0000;"></i> Flash Info — Métallurgie &amp; Auto · Hauts-de-France</div>
+          <div id="membreFlashInfo"></div>
+        </div>
       </div>
 
       <!-- DOCUMENTS -->
@@ -151,6 +162,7 @@
   </div>
 
   <script src="../js/auth.js"></script>
+  <script src="../js/flash-info.js"></script>
   <script>
     const user = Auth.requireAuth(['membre', 'secretaire', 'admin']);
     if (user) {
@@ -200,20 +212,34 @@
     function loadActusSection() {
       const grid = document.getElementById('membreActusGrid');
       const actus = [
-        { title:'Accord salaires 2024', date:'24 Avr 2024', tag:'Négociation', excerpt:'Revalorisation de 2,5% obtenue pour tous les salariés.' },
-        { title:'Formation SSCT ouverte', date:'15 Avr 2024', tag:'Formation', excerpt:'Inscriptions ouvertes pour la session de mai.' },
-        { title:'AG ordinaire – CR disponible', date:'8 Avr 2024', tag:'Événement', excerpt:'Le compte-rendu de l\'AG est disponible dans vos documents.' },
+        { title:'26ème Congrès Confédéral FO', date:'20 Avr 2026', tag:'Fédération',
+          excerpt:'FO Métaux représente la voix des travailleurs de la métallurgie au 26ème Congrès Confédéral. Retour sur les résolutions adoptées.',
+          img:'https://images.unsplash.com/photo-1521791136064-7986c2920216?w=400&h=160&fit=crop&auto=format' },
+        { title:'Résultats élections professionnelles 2023', date:'15 Nov 2023', tag:'Élections',
+          excerpt:'FO Métaux Valeo Amiens confirme sa représentativité. Merci pour votre confiance ! Résultats complets dans vos documents.',
+          img:'https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?w=400&h=160&fit=crop&auto=format' },
+        { title:'AG novembre 2023 — Bilan approuvé', date:'8 Nov 2023', tag:'AG',
+          excerpt:'L\'Assemblée Générale a approuvé le bilan à l\'unanimité. Le compte-rendu complet est disponible dans l\'espace Documents.',
+          img:'https://images.unsplash.com/photo-1573164713988-8665fc963095?w=400&h=160&fit=crop&auto=format' },
       ];
       grid.innerHTML = actus.map(a => `
         <div class="actu-card">
-          <div style="height:120px;background:linear-gradient(135deg,#1e1e1e,#3a3a3a);display:flex;align-items:center;justify-content:center;">
-            <i class="fas fa-newspaper" style="font-size:2rem;color:#cc000055;"></i>
+          <div class="actu-card-thumb">
+            <img src="${a.img}" alt="${a.title}" loading="lazy"
+                 onerror="this.parentElement.innerHTML='<div class=actu-thumb-fallback><i class=\'fas fa-newspaper\'></i></div>'" />
+            <span class="actu-thumb-tag">${a.tag}</span>
           </div>
           <div class="actu-card-body">
-            <div class="actu-card-meta"><span class="tag">${a.tag}</span><span>${a.date}</span></div>
-            <h3>${a.title}</h3><p>${a.excerpt}</p>
+            <div class="actu-card-meta"><span>${a.date}</span></div>
+            <h3>${a.title}</h3>
+            <p>${a.excerpt}</p>
           </div>
         </div>`).join('');
+
+      // Flash info dans l'espace adhérent
+      if (typeof loadFlashInfo === 'function') {
+        loadFlashInfo('membreFlashInfo', { max: 6, showFilter: true, compact: false, showTicker: false });
+      }
     }
 
     loadCotisations();

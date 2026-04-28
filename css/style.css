@@ -543,6 +543,124 @@ tr:hover td { background: #fafafa; }
 }
 
 /* ═══════════════════════════════════════════
+   FLASH INFO
+═══════════════════════════════════════════ */
+
+/* Ticker défilant */
+.flash-ticker {
+  display: flex; align-items: center;
+  background: #1a1a2e; border-radius: 8px;
+  overflow: hidden; margin-bottom: 20px; height: 40px;
+}
+.flash-ticker-label {
+  flex-shrink: 0; background: var(--red); color: #fff;
+  padding: 0 16px; font-size: .8rem; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 1px;
+  height: 100%; display: flex; align-items: center; gap: 6px;
+  white-space: nowrap;
+}
+.flash-ticker-track {
+  flex: 1; overflow: hidden; height: 100%;
+  display: flex; align-items: center;
+}
+.flash-ticker-inner {
+  white-space: nowrap; display: inline-flex; align-items: center;
+  animation: ticker-scroll 42s linear infinite;
+  color: #e0e0e0; font-size: .82rem;
+}
+.flash-ticker-inner:hover { animation-play-state: paused; }
+@keyframes ticker-scroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* Filtres */
+.flash-filters {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px;
+}
+.flash-filter-btn {
+  padding: 5px 14px; border: 1.5px solid #ddd;
+  border-radius: 20px; background: #fff; cursor: pointer;
+  font-size: .79rem; font-weight: 600; color: #555;
+  transition: all .18s; white-space: nowrap;
+  font-family: inherit;
+}
+.flash-filter-btn:hover {
+  border-color: var(--fc, var(--red));
+  color: var(--fc, var(--red));
+}
+.flash-filter-btn.active {
+  background: var(--fc, var(--red));
+  border-color: var(--fc, var(--red));
+  color: #fff;
+}
+
+/* Grille */
+.flash-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 16px;
+}
+
+/* Carte */
+.flash-card {
+  border-radius: 10px; padding: 16px 18px;
+  display: flex; flex-direction: column; gap: 8px;
+  transition: transform .15s, box-shadow .15s;
+}
+.flash-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,.08);
+}
+.flash-card-head {
+  display: flex; align-items: center;
+  justify-content: space-between; gap: 8px;
+}
+.flash-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px; border-radius: 20px;
+  font-size: .71rem; font-weight: 700; white-space: nowrap;
+}
+.flash-date { font-size: .71rem; color: #999; white-space: nowrap; }
+.flash-title {
+  font-size: .9rem; font-weight: 700; color: #1a1a2e;
+  line-height: 1.4; margin: 0;
+}
+.flash-text {
+  font-size: .83rem; color: #444; line-height: 1.6; margin: 0;
+}
+.flash-footer {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  margin-top: 4px; padding-top: 8px;
+  border-top: 1px solid rgba(0,0,0,.06);
+  gap: 8px;
+}
+.flash-source {
+  font-size: .71rem; color: #999;
+  display: flex; align-items: center; gap: 4px;
+  flex: 1; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.flash-link {
+  font-size: .78rem; font-weight: 700; color: var(--red);
+  text-decoration: none; display: inline-flex;
+  align-items: center; gap: 4px; white-space: nowrap;
+  flex-shrink: 0;
+}
+.flash-link:hover { text-decoration: underline; }
+
+/* Widget compact (dashboard) */
+.flash-widget .flash-text { display: none; }
+.flash-widget .flash-title { font-size: .84rem; }
+.flash-widget .flash-card  { padding: 12px 14px; }
+
+@media (max-width: 768px) {
+  .flash-grid { grid-template-columns: 1fr; }
+  .flash-ticker-inner { font-size: .75rem; }
+}
+
+/* ═══════════════════════════════════════════
    MODAUX
 ═══════════════════════════════════════════ */
 .modal-overlay {

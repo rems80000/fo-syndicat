@@ -103,6 +103,15 @@
             <p style="color:#aaa;font-size:.88rem;padding:12px;">Aucune extraction importée. Le trésorier doit importer un relevé Crédit Agricole.</p>
           </div>
         </div>
+
+        <!-- Flash Info widget -->
+        <div class="panel flash-widget" style="margin-top:20px;">
+          <div class="panel-title" style="justify-content:space-between;">
+            <span><i class="fas fa-bolt" style="color:#cc0000;"></i> Flash Info — Métallurgie &amp; Hauts-de-France</span>
+            <a href="../index.html#flash" target="_blank" class="btn btn-sm btn-outline-red" style="font-size:.75rem;">Voir tout</a>
+          </div>
+          <div id="dashFlashInfo"></div>
+        </div>
       </div>
 
       <!-- ADHÉRENTS -->
@@ -444,6 +453,7 @@
   </div>
 
   <script src="../js/treasury-data.js"></script>
+  <script src="../js/flash-info.js"></script>
   <script src="../js/auth.js"></script>
   <script>
     const user = Auth.requireAuth(['admin', 'secretaire']);
@@ -1251,8 +1261,11 @@
 
     // ── Init : charger le tableau de bord au démarrage ──
     loadDashboard();
-    // Pré-charger les documents pour le badge count
     loadDocuments();
+    // Flash info widget compact dans le dashboard
+    if (typeof loadFlashInfo === 'function') {
+      loadFlashInfo('dashFlashInfo', { max: 4, showFilter: false, compact: true, showTicker: false });
+    }
   </script>
 </body>
 </html>

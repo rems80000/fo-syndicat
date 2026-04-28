@@ -89,6 +89,15 @@
           <div class="panel-title"><i class="fas fa-history"></i> Dernier import chargé</div>
           <div id="lastImportInfo"></div>
         </div>
+
+        <!-- Flash info compact -->
+        <div class="panel flash-widget" style="margin-top:20px;">
+          <div class="panel-title" style="justify-content:space-between;">
+            <span><i class="fas fa-bolt" style="color:#cc0000;"></i> Flash Info — Secteur &amp; Droits</span>
+            <a href="../index.html#flash" target="_blank" class="btn btn-sm btn-outline-red" style="font-size:.75rem;">Voir tout</a>
+          </div>
+          <div id="tresoFlashInfo"></div>
+        </div>
       </div>
 
       <!-- ═══ POINTAGE ═══ -->
@@ -254,6 +263,7 @@
 
   <script src="../js/auth.js"></script>
   <script src="../js/treasury-data.js"></script>
+  <script src="../js/flash-info.js"></script>
   <script>
     const API = 'https://fo-syndicat-backend-production.up.railway.app';
     let operations = [];
@@ -775,6 +785,9 @@
     if (typeof TREASURY_DATA !== 'undefined') {
       chargerBilan();
       chargerAdherents();
+    }
+    if (typeof loadFlashInfo === 'function') {
+      loadFlashInfo('tresoFlashInfo', { max: 4, showFilter: false, compact: true, showTicker: false });
     }
   </script>
 </body>
