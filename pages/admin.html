@@ -34,6 +34,7 @@
         <div class="sidebar-nav-item" onclick="showSection('documents')"><i class="fas fa-folder-open"></i> Documents admin</div>
         <div class="sidebar-nav-item" onclick="showSection('gdrive')"><i class="fab fa-google-drive"></i> Google Drive</div>
         <div class="sidebar-nav-item" onclick="showSection('cartes')"><i class="fas fa-id-card"></i> Cartes syndicales</div>
+        <div class="sidebar-nav-item" onclick="showSection('planning')"><i class="fas fa-calendar-alt"></i> Planning</div>
         <div class="sidebar-nav-item" onclick="showSection('utilisateurs')"><i class="fas fa-user-cog"></i> Utilisateurs</div>
       </nav>
       <div class="sidebar-logout">
@@ -102,6 +103,15 @@
           <div id="dashImportHistory">
             <p style="color:#aaa;font-size:.88rem;padding:12px;">Aucune extraction importée. Le trésorier doit importer un relevé Crédit Agricole.</p>
           </div>
+        </div>
+
+        <!-- Planning widget -->
+        <div class="panel" style="margin-top:20px;">
+          <div class="panel-title" style="justify-content:space-between;">
+            <span><i class="fas fa-calendar-alt" style="color:#cc0000;"></i> Prochains événements</span>
+            <button onclick="showSection('planning');document.querySelectorAll('.sidebar-nav-item').forEach(i=>i.classList.remove('active'));document.querySelectorAll('.sidebar-nav-item')[5].classList.add('active');" class="btn btn-sm btn-outline-red" style="font-size:.75rem;">Gérer</button>
+          </div>
+          <div id="dashPlanningWidget"></div>
         </div>
 
         <!-- Flash Info widget -->
@@ -331,6 +341,52 @@
         </div>
       </div>
 
+      <!-- PLANNING -->
+      <div id="section-planning" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:4px;">
+          <div>
+            <h1 class="dashboard-title" style="margin-bottom:2px;">Planning des activités</h1>
+            <p class="dashboard-subtitle" style="margin:0;">Permanences, réunions, formations, événements UD FO et Fédération</p>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button onclick="exportPlanning()" class="btn btn-sm btn-outline-red"><i class="fas fa-download"></i> Export CSV</button>
+            <button onclick="openAddEvent()" class="btn btn-red"><i class="fas fa-plus"></i> Ajouter un événement</button>
+          </div>
+        </div>
+
+        <!-- Widget planning de cette semaine -->
+        <div class="cards-row" style="margin-top:16px;margin-bottom:20px;" id="planningKPI"></div>
+
+        <div style="display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start;">
+          <!-- Liste des événements -->
+          <div class="panel">
+            <div class="panel-title"><i class="fas fa-list-ul"></i> Événements gérés manuellement</div>
+            <p style="font-size:.82rem;color:#888;margin:-8px 0 14px;">
+              <i class="fas fa-info-circle" style="color:#f0ad4e;"></i>
+              Les permanences du mercredi 12h–13h sont générées automatiquement. Vous pouvez les modifier ou les supprimer individuellement.
+            </p>
+            <div id="adminPlanningList">
+              <p style="color:#aaa;padding:12px;font-size:.88rem;">Chargement…</p>
+            </div>
+          </div>
+
+          <!-- Mini-calendrier de la semaine + types -->
+          <div style="display:flex;flex-direction:column;gap:16px;">
+            <div class="panel">
+              <div class="panel-title"><i class="fas fa-calendar-week"></i> Cette semaine</div>
+              <div id="planWeekWidget"></div>
+            </div>
+            <div class="panel">
+              <div class="panel-title"><i class="fas fa-tag"></i> Légende des types</div>
+              <div style="display:flex;flex-direction:column;gap:7px;">
+                <!-- rendered by JS -->
+                <div id="planTypeLegend"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- UTILISATEURS -->
       <div id="section-utilisateurs" style="display:none">
         <h1 class="dashboard-title">Gestion des accès</h1>
@@ -357,6 +413,76 @@
 
   <!-- TOAST -->
   <div id="toastNotif"></div>
+
+  <!-- ═══ MODAL : Événement planning ═══ -->
+  <div id="modalEvent" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEventModal()">
+    <div class="modal-box" style="max-width:640px;">
+      <div class="modal-header">
+        <h3 id="modalEventTitle"><i class="fas fa-calendar-plus" style="color:#cc0000;margin-right:8px;"></i>Nouvel événement</h3>
+        <button onclick="closeEventModal()" class="modal-close"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div style="grid-column:1/-1;">
+            <label class="form-label">Titre <span style="color:red">*</span></label>
+            <input id="evTitre" type="text" placeholder="Réunion CSE, Formation syndicale…" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div>
+            <label class="form-label">Date <span style="color:red">*</span></label>
+            <input id="evDate" type="date" />
+          </div>
+          <div>
+            <label class="form-label">Type</label>
+            <select id="evType" style="width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:7px;font-size:.88rem;">
+              <option value="permanence">Permanence FO</option>
+              <option value="reunion_fo">Réunion FO</option>
+              <option value="reunion_cse">Réunion CSE</option>
+              <option value="formation">Formation</option>
+              <option value="manifestation">Manifestation</option>
+              <option value="ud_fo">UD FO Picardie</option>
+              <option value="federation">Fédération FO</option>
+              <option value="evenement">Événement</option>
+              <option value="autre">Autre</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div>
+            <label class="form-label">Heure de début</label>
+            <input id="evHeure" type="time" />
+          </div>
+          <div>
+            <label class="form-label">Heure de fin</label>
+            <input id="evHeureFin" type="time" />
+          </div>
+        </div>
+        <div>
+          <label class="form-label"><i class="fas fa-map-pin" style="color:#cc0000;"></i> Lieu</label>
+          <input id="evLieu" type="text" placeholder="Bureau FO, Salle CSE, Bourse du Travail Amiens…" />
+        </div>
+        <div>
+          <label class="form-label">Description</label>
+          <textarea id="evDescription" rows="3" placeholder="Ordre du jour, informations pratiques…"></textarea>
+        </div>
+        <div class="form-row">
+          <div>
+            <label class="form-label">Source</label>
+            <input id="evSource" type="text" placeholder="FO Métaux Valeo, UD FO Somme, Fédération…" />
+          </div>
+          <div>
+            <label class="form-label">Lien (optionnel)</label>
+            <input id="evLien" type="url" placeholder="https://…" />
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button onclick="closeEventModal()" class="btn btn-outline-red">Annuler</button>
+        <button onclick="saveEventForm()" class="btn btn-red"><i class="fas fa-save"></i> Enregistrer</button>
+      </div>
+    </div>
+  </div>
 
   <!-- ═══ MODAL : Fiche adhérent ═══ -->
   <div id="modalFiche" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeFiche()">
@@ -454,6 +580,7 @@
 
   <script src="../js/treasury-data.js"></script>
   <script src="../js/flash-info.js"></script>
+  <script src="../js/planning.js"></script>
   <script src="../js/auth.js"></script>
   <script>
     const user = Auth.requireAuth(['admin', 'secretaire']);
@@ -484,6 +611,7 @@
       if (id === 'cotisations') { document.getElementById('cotisAnneeLabel').textContent = ANNEE_COURANTE; loadCotisations(); loadBankOps(); }
       if (id === 'documents')   loadDocuments();
       if (id === 'cartes')      loadCartes();
+      if (id === 'planning')    loadPlanningAdminSection();
     }
 
     // ── Accès aux données depuis treasury-data.js ──
@@ -1211,6 +1339,52 @@
       toast(`✅ Répartition enregistrée sur ${result.length} adhérent(s)`);
     }
 
+    // ═══════════════════════════════════════════
+    // PLANNING (section admin)
+    // ═══════════════════════════════════════════
+    function loadPlanningAdminSection() {
+      if (typeof loadPlanningAdmin !== 'function') return;
+
+      // KPI
+      const today = new Date(); today.setHours(0,0,0,0);
+      const all = getAllEvents();
+      const future = all.filter(e => isoToDate(e.date) >= today);
+      const { monday, sunday } = weekBounds();
+      const thisWeek = future.filter(e => { const d = isoToDate(e.date); return d >= monday && d <= sunday; });
+      const manual = getPlanningEvents();
+
+      const kpi = document.getElementById('planningKPI');
+      if (kpi) kpi.innerHTML = `
+        <div class="info-card"><div class="info-card-label">Événements à venir</div>
+          <div class="info-card-value">${future.length}</div></div>
+        <div class="info-card" style="border-top-color:#28a745;"><div class="info-card-label">Cette semaine</div>
+          <div class="info-card-value" style="color:#28a745;">${thisWeek.length}</div></div>
+        <div class="info-card" style="border-top-color:#007bff;"><div class="info-card-label">Ajoutés manuellement</div>
+          <div class="info-card-value" style="color:#007bff;">${manual.length}</div></div>
+        <div class="info-card" style="border-top-color:#f0ad4e;"><div class="info-card-label">Permanences auto</div>
+          <div class="info-card-value" style="color:#f0ad4e;">Mer. 12h–13h</div>
+          <div class="info-card-sub">Hebdomadaire</div></div>`;
+
+      // Liste
+      loadPlanningAdmin('adminPlanningList');
+
+      // Widget cette semaine
+      if (typeof loadPlanningWidget === 'function') {
+        loadPlanningWidget('planWeekWidget', 8);
+      }
+
+      // Légende types
+      const legend = document.getElementById('planTypeLegend');
+      if (legend && typeof PLANNING_TYPES !== 'undefined') {
+        legend.innerHTML = Object.entries(PLANNING_TYPES).map(([k, t]) => `
+          <div style="display:flex;align-items:center;gap:8px;font-size:.82rem;">
+            <span style="width:12px;height:12px;border-radius:50%;background:${t.color};flex-shrink:0;"></span>
+            <i class="fas ${t.icon}" style="color:${t.color};width:14px;text-align:center;"></i>
+            <span style="color:#444;">${t.label}</span>
+          </div>`).join('');
+      }
+    }
+
     const MIME_ICONS = {
       'application/pdf': 'fa-file-pdf',
       'application/vnd.google-apps.spreadsheet': 'fa-file-excel',
@@ -1262,9 +1436,11 @@
     // ── Init : charger le tableau de bord au démarrage ──
     loadDashboard();
     loadDocuments();
-    // Flash info widget compact dans le dashboard
     if (typeof loadFlashInfo === 'function') {
       loadFlashInfo('dashFlashInfo', { max: 4, showFilter: false, compact: true, showTicker: false });
+    }
+    if (typeof loadPlanningWidget === 'function') {
+      loadPlanningWidget('dashPlanningWidget', 5);
     }
   </script>
 </body>

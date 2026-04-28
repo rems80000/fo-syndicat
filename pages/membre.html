@@ -88,6 +88,14 @@
           </div>
         </div>
 
+        <div class="panel" style="margin-bottom:20px;">
+          <div class="panel-title" style="justify-content:space-between;">
+            <span><i class="fas fa-calendar-alt"></i> Prochains événements</span>
+            <a href="../index.html#planning" class="btn btn-sm btn-outline-red" style="font-size:.75rem;">Voir tout</a>
+          </div>
+          <div id="membrePlanningWidget"></div>
+        </div>
+
         <div class="panel">
           <div class="panel-title"><i class="fas fa-list"></i> Historique des versements</div>
           <div class="table-container">
@@ -163,6 +171,7 @@
 
   <script src="../js/auth.js"></script>
   <script src="../js/flash-info.js"></script>
+  <script src="../js/planning.js"></script>
   <script>
     const user = Auth.requireAuth(['membre', 'secretaire', 'admin']);
     if (user) {
@@ -243,6 +252,9 @@
     }
 
     loadCotisations();
+    if (typeof loadPlanningWidget === 'function') {
+      loadPlanningWidget('membrePlanningWidget', 4);
+    }
   </script>
 </body>
 </html>
