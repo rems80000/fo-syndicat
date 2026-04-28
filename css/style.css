@@ -541,3 +541,68 @@ tr:hover td { background: #fafafa; }
   .login-card { padding: 32px 24px; }
   .section-title { font-size: 1.5rem; }
 }
+
+/* ═══════════════════════════════════════════
+   MODAUX
+═══════════════════════════════════════════ */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.55);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 9000; padding: 20px;
+}
+.modal-box {
+  background: #fff; border-radius: 12px; width: 100%; max-width: 640px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.25); display: flex; flex-direction: column;
+}
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 22px; border-bottom: 1px solid #eee;
+}
+.modal-header h3 { font-size: 1.05rem; font-weight: 700; margin: 0; }
+.modal-close {
+  background: none; border: none; font-size: 1.1rem; cursor: pointer;
+  color: #666; padding: 4px 8px; border-radius: 6px;
+}
+.modal-close:hover { background: #f0f0f0; }
+.modal-body {
+  padding: 22px; overflow-y: auto; max-height: 70vh;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.modal-footer {
+  padding: 14px 22px; border-top: 1px solid #eee;
+  display: flex; justify-content: flex-end; gap: 10px;
+}
+
+/* Inputs génériques dans les modaux et sections */
+.modal-body input[type="text"],
+.modal-body input[type="email"],
+.modal-body input[type="tel"],
+.modal-body input[type="date"],
+.modal-body input[type="number"],
+.modal-body select,
+.modal-body textarea,
+.panel-form input[type="text"],
+.panel-form input[type="date"],
+.panel-form input[type="number"],
+.panel-form select {
+  width: 100%; padding: 8px 12px; border: 1px solid #ddd;
+  border-radius: 7px; font-size: .88rem; box-sizing: border-box;
+  font-family: inherit;
+}
+.modal-body input:focus,
+.modal-body select:focus,
+.modal-body textarea:focus { outline: none; border-color: var(--red); }
+.modal-body textarea { resize: vertical; }
+
+/* Badge statut carte */
+.badge-blue  { background: #cce5ff; color: #004085; }
+.badge-grey  { background: #e9ecef; color: #495057; }
+
+/* Toast notification */
+#toastNotif {
+  position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+  background: #333; color: #fff; padding: 12px 20px; border-radius: 8px;
+  font-size: .88rem; opacity: 0; transition: opacity .3s;
+  pointer-events: none;
+}
+#toastNotif.show { opacity: 1; }

@@ -25,7 +25,7 @@
       <div class="sidebar-user">
         <div class="sidebar-user-avatar" id="avatarInitials" style="background:#f0ad4e;color:#000;">--</div>
         <div class="sidebar-user-name" id="sidebarName">Chargement...</div>
-        <div class="sidebar-user-role" style="color:#f0ad4e;"><i class="fas fa-shield-alt" style="font-size:.6rem;"></i> Administrateur</div>
+        <div class="sidebar-user-role" id="sidebarRole" style="color:#f0ad4e;"><i class="fas fa-shield-alt" style="font-size:.6rem;"></i> Administrateur</div>
       </div>
       <nav class="sidebar-nav">
         <div class="sidebar-nav-item active" onclick="showSection('dashboard')"><i class="fas fa-tachometer-alt"></i> Tableau de bord</div>
@@ -33,6 +33,7 @@
         <div class="sidebar-nav-item" onclick="showSection('cotisations')"><i class="fas fa-euro-sign"></i> Cotisations</div>
         <div class="sidebar-nav-item" onclick="showSection('documents')"><i class="fas fa-folder-open"></i> Documents admin</div>
         <div class="sidebar-nav-item" onclick="showSection('gdrive')"><i class="fab fa-google-drive"></i> Google Drive</div>
+        <div class="sidebar-nav-item" onclick="showSection('cartes')"><i class="fas fa-id-card"></i> Cartes syndicales</div>
         <div class="sidebar-nav-item" onclick="showSection('utilisateurs')"><i class="fas fa-user-cog"></i> Utilisateurs</div>
       </nav>
       <div class="sidebar-logout">
@@ -128,22 +129,44 @@
 
       <!-- COTISATIONS GLOBALES -->
       <div id="section-cotisations" style="display:none">
-        <h1 class="dashboard-title">Suivi des cotisations</h1>
-        <p class="dashboard-subtitle">Vue consolidée de toutes les cotisations 2024</p>
+        <h1 class="dashboard-title">Suivi des cotisations <span id="cotisAnneeLabel" style="color:#cc0000;font-size:1.1rem;"></span></h1>
+        <p class="dashboard-subtitle">Vue consolidée — données Excel + extraction bancaire</p>
         <div class="panel">
-          <div class="panel-title"><i class="fas fa-chart-bar"></i> Progression mensuelle 2024</div>
+          <div class="panel-title"><i class="fas fa-chart-bar"></i> Progression mensuelle</div>
           <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:16px;" id="monthsGrid"></div>
         </div>
         <div class="panel">
-          <div class="panel-title" style="justify-content:space-between;">
+          <div class="panel-title" style="justify-content:space-between;flex-wrap:wrap;gap:8px;">
             <span><i class="fas fa-list"></i> Détail par adhérent</span>
-            <button class="btn btn-sm btn-outline-red" onclick="syncSheets()"><i class="fab fa-google"></i> Actualiser depuis Sheets</button>
+            <div style="display:flex;gap:8px;">
+              <input type="text" placeholder="Rechercher…" oninput="filterCotis(this.value)" style="padding:5px 10px;border:1px solid #ddd;border-radius:6px;font-size:.83rem;" />
+              <button class="btn btn-sm btn-outline-red" onclick="exportCSV()"><i class="fas fa-download"></i> Export CSV</button>
+            </div>
           </div>
           <div class="table-container">
             <table>
-              <thead><tr><th>Matricule</th><th>Nom</th><th>Jan</th><th>Fév</th><th>Mar</th><th>Avr</th><th>Total</th><th>Statut</th></tr></thead>
+              <thead><tr><th>Matricule</th><th>Nom</th><th>Jan</th><th>Fév</th><th>Mar</th><th>Avr</th><th>Total reçu</th><th>Statut</th></tr></thead>
               <tbody id="cotisBody"></tbody>
             </table>
+          </div>
+        </div>
+
+        <!-- Opérations bancaires avec répartition -->
+        <div class="panel" style="margin-top:20px;">
+          <div class="panel-title" style="justify-content:space-between;">
+            <span><i class="fas fa-university"></i> Opérations bancaires — répartition chèques/virements</span>
+            <span id="bankOpsCount" style="font-size:.8rem;color:#aaa;"></span>
+          </div>
+          <p style="font-size:.83rem;color:#888;margin:-8px 0 12px;">Cliquez sur <strong>Répartir</strong> pour ventiler un paiement groupé sur plusieurs adhérents.</p>
+          <div class="table-container">
+            <table>
+              <thead><tr><th>Date</th><th>Libellé</th><th>Crédit</th><th>Adhérent détecté</th><th>Statut</th><th>Action</th></tr></thead>
+              <tbody id="bankOpsBody"></tbody>
+            </table>
+          </div>
+          <div id="bankOpsEmpty" style="display:none;text-align:center;padding:30px;color:#aaa;font-size:.88rem;">
+            <i class="fas fa-cloud-upload-alt" style="font-size:2rem;display:block;margin-bottom:8px;"></i>
+            Aucune extraction bancaire chargée. Le trésorier doit importer un relevé Crédit Agricole.
           </div>
         </div>
       </div>
@@ -155,16 +178,24 @@
 
         <div class="panel">
           <div class="panel-title"><i class="fas fa-upload"></i> Ajouter un document</div>
-          <form class="publish-form" style="max-width:600px;">
+          <form class="publish-form" style="max-width:600px;" id="docAddForm" onsubmit="addDocument(event)">
             <div class="form-row">
-              <div><label class="form-label">Nom du document</label><input type="text" placeholder="Statuts 2024..." /></div>
+              <div><label class="form-label">Nom du document</label><input type="text" id="docNom" placeholder="Statuts 2024…" required /></div>
               <div><label class="form-label">Catégorie</label>
-                <select><option>Statuts juridiques</option><option>Comptes-rendus AG</option><option>Trésorerie</option><option>Correspondances</option><option>Accords signés</option></select>
+                <select id="docCategorie">
+                  <option value="Statuts juridiques">Statuts juridiques</option>
+                  <option value="Comptes-rendus AG">Comptes-rendus AG</option>
+                  <option value="Trésorerie">Trésorerie</option>
+                  <option value="Correspondances">Correspondances</option>
+                  <option value="Accords signés">Accords signés</option>
+                  <option value="Élections">Élections</option>
+                  <option value="Autre">Autre</option>
+                </select>
               </div>
             </div>
-            <div><label class="form-label">Lien Google Drive (partagé en lecture)</label><input type="text" placeholder="https://drive.google.com/file/..." /></div>
+            <div><label class="form-label">Lien Google Drive (partagé en lecture)</label><input type="text" id="docLien" placeholder="https://drive.google.com/file/…" /></div>
             <div><label class="form-label">Visibilité</label>
-              <select>
+              <select id="docVisibilite">
                 <option value="admin">Administrateurs uniquement</option>
                 <option value="secretaire">Secrétaire + Admins</option>
                 <option value="membre">Tous les adhérents</option>
@@ -176,106 +207,9 @@
 
         <div class="panel">
           <div class="panel-title"><i class="fas fa-folder"></i> Documents enregistrés</div>
-          <div class="docs-grid">
-            <!-- Statuts & juridique -->
-            <div class="doc-card">
-              <i class="fas fa-file-pdf doc-icon text-red"></i>
-              <div class="doc-info"><h3>Statuts FO Métaux Valeo Amiens</h3><p>Statuts juridiques de la section · Admins</p></div>
-              <div style="display:flex;gap:8px;flex-shrink:0;">
-                <a href="#" class="btn btn-sm btn-outline-red"><i class="fas fa-download"></i></a>
-                <button class="btn btn-sm btn-outline-red"><i class="fas fa-trash"></i></button>
-              </div>
-            </div>
-            <div class="doc-card">
-              <i class="fas fa-file-pdf doc-icon text-red"></i>
-              <div class="doc-info"><h3>Arrêt Cour de cassation</h3><p>Jurisprudence · Admins</p></div>
-              <div style="display:flex;gap:8px;flex-shrink:0;">
-                <a href="#" class="btn btn-sm btn-outline-red"><i class="fas fa-download"></i></a>
-                <button class="btn btn-sm btn-outline-red"><i class="fas fa-trash"></i></button>
-              </div>
-            </div>
-            <div class="doc-card">
-              <i class="fas fa-file-pdf doc-icon text-red"></i>
-              <div class="doc-info"><h3>Publication comptes 2023 – JORF</h3><p>Journal Officiel · Admins</p></div>
-              <div style="display:flex;gap:8px;flex-shrink:0;">
-                <a href="#" class="btn btn-sm btn-outline-red"><i class="fas fa-download"></i></a>
-                <button class="btn btn-sm btn-outline-red"><i class="fas fa-trash"></i></button>
-              </div>
-            </div>
-            <!-- AG -->
-            <div class="doc-card">
-              <i class="fas fa-file-alt doc-icon text-red"></i>
-              <div class="doc-info"><h3>PV AG novembre 2023 (exercice 2022)</h3><p>Assemblée Générale · Adhérents</p></div>
-              <div style="display:flex;gap:8px;flex-shrink:0;">
-                <a href="#" class="btn btn-sm btn-outline-red"><i class="fas fa-download"></i></a>
-                <button class="btn btn-sm btn-outline-red"><i class="fas fa-trash"></i></button>
-              </div>
-            </div>
-            <div class="doc-card">
-              <i class="fas fa-file-alt doc-icon text-red"></i>
-              <div class="doc-info"><h3>PV AG novembre 2022 (exercice 2021)</h3><p>Assemblée Générale · Adhérents</p></div>
-              <div style="display:flex;gap:8px;flex-shrink:0;">
-                <a href="#" class="btn btn-sm btn-outline-red"><i class="fas fa-download"></i></a>
-                <button class="btn btn-sm btn-outline-red"><i class="fas fa-trash"></i></button>
-              </div>
-            </div>
-            <div class="doc-card">
-              <i class="fas fa-file-pdf doc-icon text-red"></i>
-              <div class="doc-info"><h3>Rapport d'activité – exercice 2023</h3><p>AG 2024 · Adhérents</p></div>
-              <div style="display:flex;gap:8px;flex-shrink:0;">
-                <a href="#" class="btn btn-sm btn-outline-red"><i class="fas fa-download"></i></a>
-                <button class="btn btn-sm btn-outline-red"><i class="fas fa-trash"></i></button>
-              </div>
-            </div>
-            <!-- Trésorerie -->
-            <div class="doc-card">
-              <i class="fas fa-file-pdf doc-icon text-red"></i>
-              <div class="doc-info"><h3>Bilan financier 2023 – Valeo Amiens</h3><p>Trésorerie · Admins</p></div>
-              <div style="display:flex;gap:8px;flex-shrink:0;">
-                <a href="#" class="btn btn-sm btn-outline-red"><i class="fas fa-download"></i></a>
-                <button class="btn btn-sm btn-outline-red"><i class="fas fa-trash"></i></button>
-              </div>
-            </div>
-            <div class="doc-card">
-              <i class="fas fa-file-excel doc-icon text-red"></i>
-              <div class="doc-info"><h3>Trésorerie FO Métaux Valeo Amiens (Google Sheets)</h3><p>Suivi cotisations live · Admins</p></div>
-              <div style="display:flex;gap:8px;flex-shrink:0;">
-                <a href="https://docs.google.com/spreadsheets" target="_blank" class="btn btn-sm btn-outline-red"><i class="fas fa-external-link-alt"></i></a>
-              </div>
-            </div>
-            <!-- Élections -->
-            <div class="doc-card">
-              <i class="fas fa-vote-yea doc-icon text-red"></i>
-              <div class="doc-info"><h3>Flash Info – Résultats élections 2023</h3><p>Représentativité · Adhérents</p></div>
-              <div style="display:flex;gap:8px;flex-shrink:0;">
-                <a href="#" class="btn btn-sm btn-outline-red"><i class="fas fa-download"></i></a>
-                <button class="btn btn-sm btn-outline-red"><i class="fas fa-trash"></i></button>
-              </div>
-            </div>
-            <div class="doc-card">
-              <i class="fas fa-vote-yea doc-icon text-red"></i>
-              <div class="doc-info"><h3>Flash Info – Représentativité après élections 2023</h3><p>Résultats officiels · Adhérents</p></div>
-              <div style="display:flex;gap:8px;flex-shrink:0;">
-                <a href="#" class="btn btn-sm btn-outline-red"><i class="fas fa-download"></i></a>
-                <button class="btn btn-sm btn-outline-red"><i class="fas fa-trash"></i></button>
-              </div>
-            </div>
-            <!-- Cotisations -->
-            <div class="doc-card">
-              <i class="fas fa-file-pdf doc-icon text-red"></i>
-              <div class="doc-info"><h3>Circulaire montant cotisations 2024</h3><p>Fédération Métallurgie · Admins</p></div>
-              <div style="display:flex;gap:8px;flex-shrink:0;">
-                <a href="#" class="btn btn-sm btn-outline-red"><i class="fas fa-download"></i></a>
-                <button class="btn btn-sm btn-outline-red"><i class="fas fa-trash"></i></button>
-              </div>
-            </div>
-            <div class="doc-card">
-              <i class="fas fa-file-pdf doc-icon text-red"></i>
-              <div class="doc-info"><h3>Récépissé dépôt des comptes – exercice 2023</h3><p>DEETS · Admins</p></div>
-              <div style="display:flex;gap:8px;flex-shrink:0;">
-                <a href="#" class="btn btn-sm btn-outline-red"><i class="fas fa-download"></i></a>
-                <button class="btn btn-sm btn-outline-red"><i class="fas fa-trash"></i></button>
-              </div>
+          <div class="docs-grid" id="documentsGrid">
+            <div style="text-align:center;padding:24px;color:#aaa;grid-column:1/-1;">
+              <i class="fas fa-spinner fa-spin"></i> Chargement…
             </div>
           </div>
         </div>
@@ -319,6 +253,75 @@
         </div>
       </div>
 
+      <!-- CARTES SYNDICALES -->
+      <div id="section-cartes" style="display:none">
+        <h1 class="dashboard-title">Cartes syndicales</h1>
+        <p class="dashboard-subtitle">Cartes pré-numérotées reçues de la fédération — attribution et suivi</p>
+
+        <div class="cards-row" style="margin-bottom:20px;">
+          <div class="info-card"><div class="info-card-label">Cartes reçues</div><div class="info-card-value" id="carteTotal">0</div></div>
+          <div class="info-card" style="border-top-color:#28a745;"><div class="info-card-label">Attribuées</div><div class="info-card-value" style="color:#28a745;" id="carteAttribuees">0</div></div>
+          <div class="info-card" style="border-top-color:#007bff;"><div class="info-card-label">Remises membre</div><div class="info-card-value" style="color:#007bff;" id="carteRemises">0</div></div>
+          <div class="info-card" style="border-top-color:#f0ad4e;"><div class="info-card-label">Disponibles</div><div class="info-card-value" style="color:#f0ad4e;" id="carteDisponibles">0</div></div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+          <!-- Enregistrer un lot -->
+          <div class="panel panel-form">
+            <div class="panel-title"><i class="fas fa-inbox"></i> Enregistrer un lot reçu</div>
+            <form id="carteReceptionForm" style="display:flex;flex-direction:column;gap:12px;">
+              <div class="form-row">
+                <div><label class="form-label">N° début</label><input type="number" id="carteDebut" min="1" placeholder="1001" required /></div>
+                <div><label class="form-label">N° fin</label><input type="number" id="carteFin" min="1" placeholder="1050" required /></div>
+              </div>
+              <div class="form-row">
+                <div><label class="form-label">Année</label><input type="text" id="carteAnnee" value="2026" required /></div>
+                <div><label class="form-label">Date réception</label><input type="date" id="carteDateReception" /></div>
+              </div>
+              <button type="submit" class="btn btn-red"><i class="fas fa-plus"></i> Enregistrer le lot</button>
+            </form>
+          </div>
+
+          <!-- Attribution rapide -->
+          <div class="panel panel-form">
+            <div class="panel-title"><i class="fas fa-hand-holding"></i> Attribuer une carte</div>
+            <form id="carteAttributionForm" style="display:flex;flex-direction:column;gap:12px;">
+              <div><label class="form-label">Numéro de carte</label>
+                <select id="carteNumSelect" style="width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:7px;font-size:.88rem;"><option value="">— Carte disponible —</option></select>
+              </div>
+              <div><label class="form-label">Adhérent</label>
+                <select id="carteMembreSelect" style="width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:7px;font-size:.88rem;"><option value="">— Sélectionner —</option></select>
+              </div>
+              <div><label class="form-label">Date attribution</label><input type="date" id="carteDateAttribution" /></div>
+              <button type="submit" class="btn btn-red"><i class="fas fa-check"></i> Attribuer</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Liste des cartes -->
+        <div class="panel" style="margin-top:20px;">
+          <div class="panel-title" style="justify-content:space-between;flex-wrap:wrap;gap:8px;">
+            <span><i class="fas fa-list"></i> Suivi des cartes</span>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <select id="carteFilterStatut" onchange="renderCartes()" style="padding:5px 8px;border:1px solid #ddd;border-radius:6px;font-size:.82rem;">
+                <option value="">Tous statuts</option>
+                <option value="disponible">Disponible</option>
+                <option value="attribuee">Attribuée</option>
+                <option value="remise">Remise au membre</option>
+                <option value="retournee">Retournée</option>
+              </select>
+              <button class="btn btn-sm btn-outline-red" onclick="exportCartes()"><i class="fas fa-download"></i> Export CSV</button>
+            </div>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead><tr><th>N° Carte</th><th>Année</th><th>Statut</th><th>Adhérent</th><th>Date attribution</th><th>Actions</th></tr></thead>
+              <tbody id="cartesBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
       <!-- UTILISATEURS -->
       <div id="section-utilisateurs" style="display:none">
         <h1 class="dashboard-title">Gestion des accès</h1>
@@ -343,6 +346,103 @@
     </main>
   </div>
 
+  <!-- TOAST -->
+  <div id="toastNotif"></div>
+
+  <!-- ═══ MODAL : Fiche adhérent ═══ -->
+  <div id="modalFiche" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeFiche()">
+    <div class="modal-box" style="max-width:720px;">
+      <div class="modal-header">
+        <h3><i class="fas fa-user-edit" style="color:#cc0000;margin-right:8px;"></i> Fiche adhérent</h3>
+        <button onclick="closeFiche()" class="modal-close"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="ficheKey" />
+        <div class="form-row">
+          <div><label class="form-label">Nom <span style="color:red">*</span></label><input id="ficheNom" type="text" /></div>
+          <div><label class="form-label">Prénom</label><input id="fichePrenom" type="text" /></div>
+        </div>
+        <div class="form-row">
+          <div><label class="form-label"><i class="fas fa-envelope" style="color:#cc0000;"></i> Email</label><input id="ficheEmail" type="email" placeholder="prenom.nom@valeo.com" /></div>
+          <div><label class="form-label"><i class="fas fa-phone" style="color:#cc0000;"></i> Téléphone</label><input id="ficheTel" type="tel" placeholder="06 xx xx xx xx" /></div>
+        </div>
+        <div><label class="form-label"><i class="fas fa-map-marker-alt" style="color:#cc0000;"></i> Adresse</label><input id="ficheAdresse" type="text" placeholder="Rue, code postal, ville" /></div>
+        <div class="form-row">
+          <div><label class="form-label">Collège / Service</label><input id="ficheCollege" type="text" /></div>
+          <div><label class="form-label">Mode de paiement</label>
+            <select id="ficheModePaiement" style="width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:7px;font-size:.88rem;">
+              <option value="">— Choisir —</option>
+              <option value="prelevement">Prélèvement</option>
+              <option value="cheque">Chèque</option>
+              <option value="especes">Espèces</option>
+              <option value="virement">Virement</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div><label class="form-label">Date d'entrée</label><input id="ficheDateEntree" type="date" /></div>
+          <div><label class="form-label">Date de sortie</label><input id="ficheDateSortie" type="date" /></div>
+        </div>
+        <div class="form-row">
+          <div><label class="form-label">Postes FO</label><input id="fichePostesFO" type="text" placeholder="Délégué syndical, DSC…" /></div>
+          <div><label class="form-label">Postes CSE</label><input id="fichePostesCSE" type="text" placeholder="Titulaire, suppléant…" /></div>
+        </div>
+        <div class="form-row" style="align-items:center;">
+          <div style="display:flex;align-items:center;gap:10px;padding-top:18px;">
+            <input type="checkbox" id="ficheActif" style="width:18px;height:18px;cursor:pointer;" />
+            <label for="ficheActif" class="form-label" style="margin:0;cursor:pointer;">Adhérent actif</label>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding-top:18px;">
+            <input type="checkbox" id="ficheListeDiff" style="width:18px;height:18px;cursor:pointer;" />
+            <label for="ficheListeDiff" class="form-label" style="margin:0;cursor:pointer;">Liste de diffusion</label>
+          </div>
+        </div>
+        <div>
+          <label class="form-label"><i class="fas fa-paperclip" style="color:#cc0000;"></i> Bulletin d'adhésion (lien Drive)</label>
+          <div style="display:flex;gap:8px;">
+            <input id="ficheBulletin" type="text" placeholder="https://drive.google.com/…" style="flex:1;" />
+            <a id="ficheBulletinLink" href="#" target="_blank" class="btn btn-sm btn-outline-red" style="display:none;flex-shrink:0;"><i class="fas fa-external-link-alt"></i></a>
+          </div>
+        </div>
+        <div>
+          <label class="form-label">Commentaires internes</label>
+          <textarea id="ficheCommentaire" rows="3" placeholder="Notes, remarques…"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button onclick="closeFiche()" class="btn btn-outline-red">Annuler</button>
+        <button onclick="saveFiche()" class="btn btn-red"><i class="fas fa-save"></i> Enregistrer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ MODAL : Répartir un paiement ═══ -->
+  <div id="modalRepartir" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeRepartir()">
+    <div class="modal-box" style="max-width:580px;">
+      <div class="modal-header">
+        <h3><i class="fas fa-divide" style="color:#cc0000;margin-right:8px;"></i> Répartir le paiement</h3>
+        <button onclick="closeRepartir()" class="modal-close"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div style="background:#f0f9f0;padding:12px 16px;border-radius:8px;border-left:4px solid #28a745;">
+          <div style="font-size:.85rem;color:#555;margin-bottom:4px;" id="repartirLibelle"></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:1.1rem;font-weight:700;color:#28a745;" id="repartirMontant"></span>
+            <span style="font-size:.82rem;color:#666;">Restant : <strong id="repartirRestant"></strong></span>
+          </div>
+        </div>
+        <div id="repartirLignes" style="display:flex;flex-direction:column;gap:8px;"></div>
+        <button onclick="addRepartirLigne()" class="btn btn-sm btn-outline-red" style="align-self:flex-start;">
+          <i class="fas fa-user-plus"></i> Ajouter un adhérent
+        </button>
+      </div>
+      <div class="modal-footer">
+        <button onclick="closeRepartir()" class="btn btn-outline-red">Annuler</button>
+        <button onclick="saveRepartir()" class="btn btn-red"><i class="fas fa-check"></i> Valider la répartition</button>
+      </div>
+    </div>
+  </div>
+
   <script src="../js/treasury-data.js"></script>
   <script src="../js/auth.js"></script>
   <script>
@@ -355,12 +455,12 @@
       document.getElementById('avatarInitials').textContent =
         user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
       if (user.role === 'secretaire') {
-        const roleEl = document.querySelector('.sidebar-user-role');
-        if (roleEl) roleEl.innerHTML = '<i class="fas fa-pen" style="font-size:.6rem;"></i> Secrétaire';
+        const roleEl = document.getElementById('sidebarRole');
+        if (roleEl) { roleEl.style.color = '#007bff'; roleEl.innerHTML = '<i class="fas fa-pen" style="font-size:.6rem;"></i> Secrétaire'; }
         const avatarEl = document.getElementById('avatarInitials');
         if (avatarEl) { avatarEl.style.background = '#007bff'; avatarEl.style.color = '#fff'; }
         const headerBadge = document.querySelector('.header-actions span');
-        if (headerBadge) headerBadge.innerHTML = '<i class="fas fa-pen"></i> Secrétariat';
+        if (headerBadge) { headerBadge.style.color = '#007bff'; headerBadge.innerHTML = '<i class="fas fa-pen"></i> Secrétariat'; }
       }
     }
 
@@ -371,7 +471,9 @@
       event.currentTarget.classList.add('active');
       if (id === 'dashboard')   loadDashboard();
       if (id === 'adherents')   loadAdherents();
-      if (id === 'cotisations') loadCotisations();
+      if (id === 'cotisations') { document.getElementById('cotisAnneeLabel').textContent = ANNEE_COURANTE; loadCotisations(); loadBankOps(); }
+      if (id === 'documents')   loadDocuments();
+      if (id === 'cartes')      loadCartes();
     }
 
     // ── Accès aux données depuis treasury-data.js ──
@@ -534,20 +636,23 @@
         : list;
 
       document.getElementById('adherentsBody').innerHTML = filtered.map((a, i) => {
-        const mat     = a.mat || `V-${String(i+1).padStart(3,'0')}`;
+        const merged  = getMergedMember(a);
+        const key     = getMemberKey(a);
+        const mat     = merged.mat || `V-${String(i+1).padStart(3,'0')}`;
         const statut  = (a.resteAPayer || 0) <= 0 ? 'payé' : 'retard';
-        const inactif = !a.actif;
+        const inactif = !merged.actif;
         return `<tr${inactif ? ' style="opacity:.55;"' : ''}>
           <td><code>${mat}</code></td>
-          <td>${a.nom || ''}</td>
-          <td>${a.prenom || ''}</td>
-          <td>${a.college || '—'}</td>
+          <td>${merged.nom || ''}</td>
+          <td>${merged.prenom || ''}</td>
+          <td>${merged.college || '—'}</td>
           <td>
             <span class="badge ${statut==='payé'?'badge-green':'badge-orange'}">${statut==='payé'?'À jour':'En retard'}</span>
             ${inactif ? '<span class="badge" style="background:#e9ecef;color:#666;margin-left:4px;">Inactif</span>' : ''}
+            ${merged.email ? '<i class="fas fa-envelope" style="color:#aaa;margin-left:4px;" title="'+merged.email+'"></i>' : ''}
           </td>
-          <td>${a.dateEntree || '—'}</td>
-          <td><button class="btn btn-sm btn-outline-red">Fiche</button></td>
+          <td>${merged.dateEntree || '—'}</td>
+          <td><button onclick="openFiche('${key}')" class="btn btn-sm btn-outline-red"><i class="fas fa-edit"></i> Fiche</button></td>
         </tr>`;
       }).join('');
 
@@ -619,7 +724,482 @@
       anchor.click();
     }
 
-    function syncSheets() { loadAdherents(); alert('✅ Données rechargées depuis la base locale.'); }
+    function syncSheets() { loadAdherents(); toast('✅ Données rechargées depuis la base locale.'); }
+    function filterCotis(val) { loadCotisations(val); }
+
+    // ═══════════════════════════════════════════
+    // TOAST
+    // ═══════════════════════════════════════════
+    function toast(msg, color) {
+      const el = document.getElementById('toastNotif');
+      el.textContent = msg;
+      el.style.background = color || '#333';
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 3000);
+    }
+
+    // ═══════════════════════════════════════════
+    // MEMBER DATA OVERRIDE (localStorage)
+    // ═══════════════════════════════════════════
+    function getMembersOverrides() {
+      try { return JSON.parse(localStorage.getItem('fo_members_data') || '{}'); } catch { return {}; }
+    }
+    function saveMembersOverrides(obj) {
+      localStorage.setItem('fo_members_data', JSON.stringify(obj));
+    }
+    function getMemberKey(a) { return `${(a.nom||'').toUpperCase()}_${(a.prenom||'').toUpperCase()}`; }
+    function getMergedMember(a) {
+      const overrides = getMembersOverrides();
+      return Object.assign({}, a, overrides[getMemberKey(a)] || {});
+    }
+
+    // ═══════════════════════════════════════════
+    // FICHE ADHÉRENT (MODAL)
+    // ═══════════════════════════════════════════
+    function openFiche(key) {
+      const raw = getAdherentsData(parseInt(ANNEE_COURANTE));
+      const baseList = raw.length ? raw : [];
+      const base = baseList.find((a, i) => getMemberKey(a) === key || `V-${String(i+1).padStart(3,'0')}` === key);
+      const a = base ? getMergedMember(base) : {};
+
+      document.getElementById('ficheKey').value       = key;
+      document.getElementById('ficheNom').value        = a.nom        || '';
+      document.getElementById('fichePrenom').value     = a.prenom     || '';
+      document.getElementById('ficheEmail').value      = a.email      || '';
+      document.getElementById('ficheTel').value        = a.telephone  || '';
+      document.getElementById('ficheAdresse').value    = a.adresse    || '';
+      document.getElementById('ficheCollege').value    = a.college    || '';
+      document.getElementById('ficheModePaiement').value = a.modePaiement || '';
+      document.getElementById('ficheDateEntree').value = (a.dateEntree || '').replace(/\//g,'-').split('-').reverse().join('-') || '';
+      document.getElementById('ficheDateSortie').value = (a.dateSortie || '').replace(/\//g,'-').split('-').reverse().join('-') || '';
+      document.getElementById('fichePostesFO').value   = Array.isArray(a.postesFO) ? a.postesFO.join(', ') : (a.postesFO || '');
+      document.getElementById('fichePostesCSE').value  = Array.isArray(a.postesCSE) ? a.postesCSE.join(', ') : (a.postesCSE || '');
+      document.getElementById('ficheActif').checked    = a.actif !== false;
+      document.getElementById('ficheListeDiff').checked = a.listeDiffusion || false;
+      document.getElementById('ficheBulletin').value   = a.bulletinAdhesion || '';
+      document.getElementById('ficheCommentaire').value = a.commentaire || '';
+
+      const link = document.getElementById('ficheBulletinLink');
+      if (a.bulletinAdhesion) { link.href = a.bulletinAdhesion; link.style.display = ''; }
+      else { link.style.display = 'none'; }
+
+      document.getElementById('modalFiche').style.display = 'flex';
+    }
+
+    function closeFiche() { document.getElementById('modalFiche').style.display = 'none'; }
+
+    function saveFiche() {
+      const key = document.getElementById('ficheKey').value;
+      const overrides = getMembersOverrides();
+      const bulletin = document.getElementById('ficheBulletin').value.trim();
+      overrides[key] = {
+        nom:            document.getElementById('ficheNom').value.trim().toUpperCase(),
+        prenom:         document.getElementById('fichePrenom').value.trim(),
+        email:          document.getElementById('ficheEmail').value.trim(),
+        telephone:      document.getElementById('ficheTel').value.trim(),
+        adresse:        document.getElementById('ficheAdresse').value.trim(),
+        college:        document.getElementById('ficheCollege').value.trim(),
+        modePaiement:   document.getElementById('ficheModePaiement').value,
+        dateEntree:     document.getElementById('ficheDateEntree').value,
+        dateSortie:     document.getElementById('ficheDateSortie').value,
+        postesFO:       document.getElementById('fichePostesFO').value.trim(),
+        postesCSE:      document.getElementById('fichePostesCSE').value.trim(),
+        actif:          document.getElementById('ficheActif').checked,
+        listeDiffusion: document.getElementById('ficheListeDiff').checked,
+        bulletinAdhesion: bulletin,
+        commentaire:    document.getElementById('ficheCommentaire').value.trim(),
+      };
+      // update link
+      const link = document.getElementById('ficheBulletinLink');
+      if (bulletin) { link.href = bulletin; link.style.display = ''; }
+      else { link.style.display = 'none'; }
+
+      saveMembersOverrides(overrides);
+      closeFiche();
+      loadAdherents();
+      toast('✅ Fiche enregistrée', '#28a745');
+    }
+
+    // ═══════════════════════════════════════════
+    // DOCUMENTS (localStorage)
+    // ═══════════════════════════════════════════
+    const DOC_ICONS = {
+      'Statuts juridiques': 'fa-file-pdf',
+      'Comptes-rendus AG':  'fa-file-alt',
+      'Trésorerie':         'fa-file-excel',
+      'Élections':          'fa-vote-yea',
+      'Correspondances':    'fa-envelope',
+      'Accords signés':     'fa-handshake',
+      'Autre':              'fa-file-alt',
+    };
+    const DOCS_DEFAULT = [
+      { id: 'd1', nom:'Statuts FO Métaux Valeo Amiens',              categorie:'Statuts juridiques', visibilite:'admin',     lien:'' },
+      { id: 'd2', nom:'Arrêt Cour de cassation – Jurisprudence',     categorie:'Statuts juridiques', visibilite:'admin',     lien:'' },
+      { id: 'd3', nom:'Publication comptes 2023 – JORF',             categorie:'Statuts juridiques', visibilite:'admin',     lien:'' },
+      { id: 'd4', nom:'PV AG novembre 2023 (exercice 2022)',         categorie:'Comptes-rendus AG',  visibilite:'membre',    lien:'' },
+      { id: 'd5', nom:'PV AG novembre 2022 (exercice 2021)',         categorie:'Comptes-rendus AG',  visibilite:'membre',    lien:'' },
+      { id: 'd6', nom:'Rapport d\'activité – exercice 2023',         categorie:'Comptes-rendus AG',  visibilite:'membre',    lien:'' },
+      { id: 'd7', nom:'Bilan financier 2023 – Valeo Amiens',         categorie:'Trésorerie',         visibilite:'admin',     lien:'' },
+      { id: 'd8', nom:'Trésorerie FO Métaux Valeo Amiens (Google Sheets)', categorie:'Trésorerie', visibilite:'admin',       lien:'https://docs.google.com/spreadsheets' },
+      { id: 'd9', nom:'Flash Info – Résultats élections 2023',       categorie:'Élections',          visibilite:'membre',    lien:'' },
+      { id:'d10', nom:'Flash Info – Représentativité après élections 2023', categorie:'Élections',  visibilite:'membre',    lien:'' },
+      { id:'d11', nom:'Circulaire montant cotisations 2024',         categorie:'Correspondances',    visibilite:'admin',     lien:'' },
+      { id:'d12', nom:'Récépissé dépôt des comptes – exercice 2023', categorie:'Correspondances',    visibilite:'admin',     lien:'' },
+    ];
+
+    function getDocuments() {
+      try {
+        const stored = JSON.parse(localStorage.getItem('fo_documents') || 'null');
+        return stored || DOCS_DEFAULT;
+      } catch { return DOCS_DEFAULT; }
+    }
+    function saveDocuments(docs) { localStorage.setItem('fo_documents', JSON.stringify(docs)); }
+
+    function loadDocuments() {
+      const docs = getDocuments();
+      const grid = document.getElementById('documentsGrid');
+      if (!grid) return;
+      if (!docs.length) { grid.innerHTML = '<p style="color:#aaa;padding:12px;grid-column:1/-1;">Aucun document enregistré.</p>'; return; }
+      const visLabel = { admin: 'Admins', secretaire: 'Secrétaire + Admins', membre: 'Adhérents' };
+      grid.innerHTML = docs.map(d => {
+        const icon = DOC_ICONS[d.categorie] || 'fa-file-alt';
+        const hasLink = d.lien && d.lien.startsWith('http');
+        return `<div class="doc-card" id="doc-${d.id}">
+          <i class="fas ${icon} doc-icon text-red"></i>
+          <div class="doc-info">
+            <h3>${d.nom}</h3>
+            <p>${d.categorie} · ${visLabel[d.visibilite] || d.visibilite}</p>
+          </div>
+          <div style="display:flex;gap:6px;flex-shrink:0;">
+            ${hasLink
+              ? `<a href="${d.lien}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-red" title="Ouvrir"><i class="fas fa-external-link-alt"></i></a>`
+              : `<button onclick="promptDocLink('${d.id}')" class="btn btn-sm btn-outline-red" title="Ajouter un lien"><i class="fas fa-link"></i></button>`}
+            <button onclick="deleteDocument('${d.id}')" class="btn btn-sm btn-outline-red" title="Supprimer" style="color:#dc3545;border-color:#dc3545;"><i class="fas fa-trash"></i></button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function addDocument(e) {
+      e.preventDefault();
+      const docs = getDocuments();
+      const newDoc = {
+        id: 'd' + Date.now(),
+        nom:        document.getElementById('docNom').value.trim(),
+        categorie:  document.getElementById('docCategorie').value,
+        lien:       document.getElementById('docLien').value.trim(),
+        visibilite: document.getElementById('docVisibilite').value,
+      };
+      docs.unshift(newDoc);
+      saveDocuments(docs);
+      document.getElementById('docAddForm').reset();
+      loadDocuments();
+      toast('✅ Document ajouté');
+    }
+
+    function deleteDocument(id) {
+      if (!confirm('Supprimer ce document ?')) return;
+      const docs = getDocuments().filter(d => d.id !== id);
+      saveDocuments(docs);
+      loadDocuments();
+      toast('Document supprimé', '#dc3545');
+    }
+
+    function promptDocLink(id) {
+      const lien = prompt('Collez le lien Google Drive pour ce document :');
+      if (!lien) return;
+      const docs = getDocuments();
+      const d = docs.find(x => x.id === id);
+      if (d) { d.lien = lien.trim(); saveDocuments(docs); loadDocuments(); toast('✅ Lien enregistré'); }
+    }
+
+    // ═══════════════════════════════════════════
+    // CARTES SYNDICALES (localStorage)
+    // ═══════════════════════════════════════════
+    function getCards() {
+      try { return JSON.parse(localStorage.getItem('fo_cards') || '[]'); } catch { return []; }
+    }
+    function saveCards(arr) { localStorage.setItem('fo_cards', JSON.stringify(arr)); }
+
+    function loadCartes() {
+      const cards = getCards();
+      // KPI
+      const total    = cards.length;
+      const attrib   = cards.filter(c => c.statut !== 'disponible').length;
+      const remises  = cards.filter(c => c.statut === 'remise').length;
+      const dispo    = cards.filter(c => c.statut === 'disponible').length;
+      ['carteTotal','carteAttribuees','carteRemises','carteDisponibles'].forEach((id, i) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = [total, attrib, remises, dispo][i];
+      });
+
+      // Populate cartes disponibles dans le select
+      const sel = document.getElementById('carteNumSelect');
+      if (sel) {
+        sel.innerHTML = '<option value="">— Carte disponible —</option>' +
+          cards.filter(c => c.statut === 'disponible')
+               .map(c => `<option value="${c.id}">${c.number} (${c.annee})</option>`).join('');
+      }
+
+      // Populate adhérents dans le select attribution
+      const memSel = document.getElementById('carteMembreSelect');
+      if (memSel) {
+        const adhs = getAdherentsData(parseInt(ANNEE_COURANTE)).filter(a => a.actif);
+        memSel.innerHTML = '<option value="">— Sélectionner —</option>' +
+          adhs.map(a => `<option value="${getMemberKey(a)}">${a.nom} ${a.prenom||''}</option>`).join('');
+      }
+
+      renderCartes();
+    }
+
+    function renderCartes() {
+      const cards = getCards();
+      const filter = document.getElementById('carteFilterStatut')?.value || '';
+      const list = filter ? cards.filter(c => c.statut === filter) : cards;
+      const tbody = document.getElementById('cartesBody');
+      if (!tbody) return;
+
+      const statutBadge = {
+        disponible: '<span class="badge badge-blue">Disponible</span>',
+        attribuee:  '<span class="badge badge-orange">Attribuée</span>',
+        remise:     '<span class="badge badge-green">Remise</span>',
+        retournee:  '<span class="badge badge-grey">Retournée</span>',
+      };
+
+      if (!list.length) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#aaa;padding:20px;">
+          ${filter ? 'Aucune carte avec ce statut.' : 'Aucune carte enregistrée. Enregistrez un lot reçu de la fédération.'}</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = list.map(c => `
+        <tr>
+          <td><strong>${c.number}</strong></td>
+          <td>${c.annee}</td>
+          <td>${statutBadge[c.statut] || c.statut}</td>
+          <td>${c.membre || '—'}</td>
+          <td>${c.dateAttribution ? new Date(c.dateAttribution).toLocaleDateString('fr-FR') : '—'}</td>
+          <td>
+            ${c.statut === 'attribuee' ? `<button onclick="marquerRemise('${c.id}')" class="btn btn-sm btn-outline-red">Remise ✓</button>` : ''}
+            ${c.statut === 'remise'    ? `<button onclick="marquerRetour('${c.id}')" class="btn btn-sm btn-outline-red">Retour</button>` : ''}
+            <button onclick="deleteCard('${c.id}')" class="btn btn-sm btn-outline-red" style="color:#dc3545;border-color:#dc3545;"><i class="fas fa-trash"></i></button>
+          </td>
+        </tr>`).join('');
+    }
+
+    function marquerRemise(id) {
+      const cards = getCards();
+      const c = cards.find(x => x.id === id);
+      if (c) { c.statut = 'remise'; saveCards(cards); renderCartes(); toast('✅ Carte marquée comme remise au membre'); loadCartes(); }
+    }
+    function marquerRetour(id) {
+      const cards = getCards();
+      const c = cards.find(x => x.id === id);
+      if (c) { c.statut = 'retournee'; saveCards(cards); renderCartes(); toast('Carte marquée retournée', '#666'); loadCartes(); }
+    }
+    function deleteCard(id) {
+      if (!confirm('Supprimer cette carte ?')) return;
+      saveCards(getCards().filter(c => c.id !== id));
+      loadCartes();
+      toast('Carte supprimée', '#dc3545');
+    }
+
+    function exportCartes() {
+      const cards = getCards();
+      const rows = [['N° Carte','Année','Statut','Adhérent','Date attribution'],
+        ...cards.map(c => [c.number, c.annee, c.statut, c.membre||'', c.dateAttribution||''])];
+      const csv = rows.map(r => r.join(';')).join('\n');
+      const a = document.createElement('a'); a.href = 'data:text/csv;charset=utf-8,﻿'+encodeURIComponent(csv);
+      a.download = `cartes_fo_valeo_${ANNEE_COURANTE}.csv`; a.click();
+    }
+
+    document.getElementById('carteReceptionForm')?.addEventListener('submit', e => {
+      e.preventDefault();
+      const debut = parseInt(document.getElementById('carteDebut').value);
+      const fin   = parseInt(document.getElementById('carteFin').value);
+      const annee = document.getElementById('carteAnnee').value.trim();
+      const dateRec = document.getElementById('carteDateReception').value;
+      if (isNaN(debut) || isNaN(fin) || debut > fin) { toast('N° de début et de fin invalides', '#dc3545'); return; }
+      if (fin - debut > 499) { toast('Maximum 500 cartes par lot', '#dc3545'); return; }
+      const cards = getCards();
+      const existing = new Set(cards.map(c => `${c.number}_${c.annee}`));
+      let added = 0;
+      for (let n = debut; n <= fin; n++) {
+        const k = `${n}_${annee}`;
+        if (!existing.has(k)) {
+          cards.push({ id: `c${Date.now()}_${n}`, number: n, annee, statut: 'disponible', membre: null, dateAttribution: null, dateLot: dateRec });
+          added++;
+        }
+      }
+      saveCards(cards);
+      e.target.reset();
+      document.getElementById('carteAnnee').value = ANNEE_COURANTE;
+      loadCartes();
+      toast(`✅ ${added} carte(s) enregistrée(s)`);
+    });
+
+    document.getElementById('carteAttributionForm')?.addEventListener('submit', e => {
+      e.preventDefault();
+      const cardId  = document.getElementById('carteNumSelect').value;
+      const memKey  = document.getElementById('carteMembreSelect').value;
+      const dateAtt = document.getElementById('carteDateAttribution').value;
+      if (!cardId || !memKey) { toast('Sélectionnez une carte et un adhérent', '#dc3545'); return; }
+      const cards = getCards();
+      const card = cards.find(c => c.id === cardId);
+      if (!card) { toast('Carte introuvable', '#dc3545'); return; }
+      // Nom lisible
+      const adhs = getAdherentsData(parseInt(ANNEE_COURANTE));
+      const adh = adhs.find(a => getMemberKey(a) === memKey);
+      card.statut = 'attribuee';
+      card.membre = adh ? `${adh.nom} ${adh.prenom||''}`.trim() : memKey;
+      card.dateAttribution = dateAtt || new Date().toISOString().substring(0,10);
+      saveCards(cards);
+      e.target.reset();
+      document.getElementById('carteAnnee').value = ANNEE_COURANTE;
+      loadCartes();
+      toast(`✅ Carte n°${card.number} attribuée à ${card.membre}`);
+    });
+
+    // ═══════════════════════════════════════════
+    // OPÉRATIONS BANCAIRES + RÉPARTITION CHÈQUES
+    // ═══════════════════════════════════════════
+    let _bankOps = [];
+
+    async function loadBankOps() {
+      try {
+        const token = Auth.getToken();
+        const res = await fetch(`${API}/api/treasury/consolidated?annee=${ANNEE_COURANTE}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        _bankOps = (data.operations || []).filter(o => o.credit > 0);
+        renderBankOps();
+      } catch {
+        const empty = document.getElementById('bankOpsEmpty');
+        const count = document.getElementById('bankOpsCount');
+        if (empty) empty.style.display = 'block';
+        if (count) count.textContent = '';
+        const tbody = document.getElementById('bankOpsBody');
+        if (tbody) tbody.innerHTML = '';
+      }
+    }
+
+    function renderBankOps(filter) {
+      const tbody = document.getElementById('bankOpsBody');
+      const empty = document.getElementById('bankOpsEmpty');
+      const count = document.getElementById('bankOpsCount');
+      if (!tbody) return;
+      const ops = filter ? _bankOps.filter(o =>
+        (o.libelle||'').toLowerCase().includes(filter.toLowerCase()) ||
+        (o.adherent||'').toLowerCase().includes(filter.toLowerCase())
+      ) : _bankOps;
+      if (count) count.textContent = `${ops.length} opération(s) crédit`;
+      if (!ops.length) { if (empty) empty.style.display = 'block'; tbody.innerHTML = ''; return; }
+      if (empty) empty.style.display = 'none';
+      const statutBadge = {
+        pointe_auto:        '<span class="badge badge-green">Pointé auto</span>',
+        valide_manuellement:'<span class="badge badge-green">Validé</span>',
+        a_valider:          '<span class="badge badge-orange">À valider</span>',
+        non_identifie:      '<span class="badge badge-red">Non identifié</span>',
+      };
+      tbody.innerHTML = ops.map((op, i) => `
+        <tr>
+          <td>${op.date}</td>
+          <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${op.libelle}">${op.libelle}</td>
+          <td style="color:#28a745;font-weight:700;">${op.credit.toLocaleString('fr-FR',{minimumFractionDigits:2})} €</td>
+          <td>${op.adherent || '<span style="color:#aaa">—</span>'}</td>
+          <td>${statutBadge[op.statut] || op.statut}</td>
+          <td><button onclick="openRepartir(${i})" class="btn btn-sm btn-outline-red"><i class="fas fa-divide"></i> Répartir</button></td>
+        </tr>`).join('');
+    }
+
+    // MODAL RÉPARTITION
+    let _repartirIdx = null;
+    let _repartirLines = [];
+
+    function openRepartir(idx) {
+      _repartirIdx = idx;
+      _repartirLines = [];
+      const op = _bankOps[idx];
+      document.getElementById('repartirLibelle').textContent = op.libelle;
+      document.getElementById('repartirMontant').textContent = op.credit.toLocaleString('fr-FR',{minimumFractionDigits:2}) + ' €';
+      document.getElementById('repartirLignes').innerHTML = '';
+      addRepartirLigne();
+      updateRepartirRestant();
+      document.getElementById('modalRepartir').style.display = 'flex';
+    }
+    function closeRepartir() { document.getElementById('modalRepartir').style.display = 'none'; }
+
+    function addRepartirLigne() {
+      const adhs = getAdherentsData(parseInt(ANNEE_COURANTE)).filter(a => a.actif);
+      const container = document.getElementById('repartirLignes');
+      const lineId = Date.now();
+      const div = document.createElement('div');
+      div.id = `rline_${lineId}`;
+      div.style.cssText = 'display:grid;grid-template-columns:1fr 120px 36px;gap:8px;align-items:center;';
+      div.innerHTML = `
+        <select style="padding:7px 10px;border:1px solid #ddd;border-radius:7px;font-size:.85rem;width:100%;">
+          <option value="">— Adhérent —</option>
+          ${adhs.map(a => `<option value="${getMemberKey(a)}">${a.nom} ${a.prenom||''}</option>`).join('')}
+        </select>
+        <input type="number" min="0" step="0.01" placeholder="0.00 €"
+          style="padding:7px 10px;border:1px solid #ddd;border-radius:7px;font-size:.85rem;width:100%;"
+          oninput="updateRepartirRestant()" />
+        <button onclick="removeRepartirLigne('rline_${lineId}')" class="btn btn-sm btn-outline-red" style="padding:6px 10px;color:#dc3545;border-color:#dc3545;">
+          <i class="fas fa-times"></i>
+        </button>`;
+      container.appendChild(div);
+    }
+
+    function removeRepartirLigne(id) {
+      document.getElementById(id)?.remove();
+      updateRepartirRestant();
+    }
+
+    function updateRepartirRestant() {
+      if (_repartirIdx === null) return;
+      const total = _bankOps[_repartirIdx]?.credit || 0;
+      const inputs = document.querySelectorAll('#repartirLignes input[type=number]');
+      const used = Array.from(inputs).reduce((s, i) => s + (parseFloat(i.value) || 0), 0);
+      const rest = (total - used).toFixed(2);
+      const el = document.getElementById('repartirRestant');
+      if (el) {
+        el.textContent = rest + ' €';
+        el.style.color = parseFloat(rest) < 0 ? '#dc3545' : parseFloat(rest) === 0 ? '#28a745' : '#856404';
+      }
+    }
+
+    function saveRepartir() {
+      if (_repartirIdx === null) return;
+      const op = _bankOps[_repartirIdx];
+      const total = op.credit || 0;
+      const lines = document.querySelectorAll('#repartirLignes > div');
+      const result = [];
+      let sumUsed = 0;
+      for (const line of lines) {
+        const sel = line.querySelector('select').value;
+        const amt = parseFloat(line.querySelector('input').value) || 0;
+        if (sel && amt > 0) { result.push({ membreKey: sel, montant: amt }); sumUsed += amt; }
+      }
+      if (!result.length) { toast('Ajoutez au moins un adhérent', '#dc3545'); return; }
+      if (Math.abs(sumUsed - total) > 0.01) {
+        if (!confirm(`Le total réparti (${sumUsed.toFixed(2)} €) diffère du montant (${total.toFixed(2)} €). Confirmer quand même ?`)) return;
+      }
+      // Sauvegarder la répartition dans localStorage
+      const repartitions = JSON.parse(localStorage.getItem('fo_repartitions') || '[]');
+      const adhs = getAdherentsData(parseInt(ANNEE_COURANTE));
+      repartitions.push({
+        date: op.date, libelle: op.libelle, montantTotal: total,
+        lignes: result.map(r => {
+          const adh = adhs.find(a => getMemberKey(a) === r.membreKey);
+          return { nom: adh ? `${adh.nom} ${adh.prenom||''}`.trim() : r.membreKey, montant: r.montant };
+        }),
+        createdAt: new Date().toISOString()
+      });
+      localStorage.setItem('fo_repartitions', JSON.stringify(repartitions));
+      closeRepartir();
+      toast(`✅ Répartition enregistrée sur ${result.length} adhérent(s)`);
+    }
 
     const MIME_ICONS = {
       'application/pdf': 'fa-file-pdf',
@@ -671,6 +1251,8 @@
 
     // ── Init : charger le tableau de bord au démarrage ──
     loadDashboard();
+    // Pré-charger les documents pour le badge count
+    loadDocuments();
   </script>
 </body>
 </html>
