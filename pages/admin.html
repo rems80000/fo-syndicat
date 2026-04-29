@@ -35,6 +35,7 @@
         <div class="sidebar-nav-item" onclick="showSection('gdrive')"><i class="fab fa-google-drive"></i> Google Drive</div>
         <div class="sidebar-nav-item" onclick="showSection('cartes')"><i class="fas fa-id-card"></i> Cartes syndicales</div>
         <div class="sidebar-nav-item" onclick="showSection('planning')"><i class="fas fa-calendar-alt"></i> Planning</div>
+        <div class="sidebar-nav-item" onclick="showSection('journal')"><i class="fas fa-history"></i> Journal</div>
         <div class="sidebar-nav-item" onclick="showSection('utilisateurs')"><i class="fas fa-user-cog"></i> Utilisateurs</div>
       </nav>
       <div class="sidebar-logout">
@@ -157,21 +158,27 @@
         <div class="panel">
           <div class="panel-title" style="justify-content:space-between;flex-wrap:wrap;gap:8px;">
             <span><i class="fas fa-list"></i> Détail par adhérent</span>
-            <div style="display:flex;gap:8px;">
-              <input type="text" placeholder="Rechercher…" oninput="filterCotis(this.value)" style="padding:5px 10px;border:1px solid #ddd;border-radius:6px;font-size:.83rem;" />
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+              <div style="display:flex;gap:5px;">
+                <button class="btn btn-sm adh-filter-btn-admin active" onclick="filtrerStatutAdmin('tous',this)" style="font-size:.75rem;">Tous</button>
+                <button class="btn btn-sm adh-filter-btn-admin" onclick="filtrerStatutAdmin('ajour',this)" style="font-size:.75rem;background:#d4edda;color:#155724;border-color:#c3e6cb;">✓ À jour</button>
+                <button class="btn btn-sm adh-filter-btn-admin" onclick="filtrerStatutAdmin('partiel',this)" style="font-size:.75rem;background:#fff3cd;color:#856404;border-color:#ffeeba;">⚠ Partiel</button>
+                <button class="btn btn-sm adh-filter-btn-admin" onclick="filtrerStatutAdmin('aucun',this)" style="font-size:.75rem;background:#f8d7da;color:#721c24;border-color:#f5c6cb;">✗ Aucun</button>
+              </div>
+              <input type="text" id="cotisSearch" placeholder="Rechercher…" oninput="loadCotisations()" style="padding:5px 10px;border:1px solid #ddd;border-radius:6px;font-size:.83rem;width:140px;" />
               <button class="btn btn-sm btn-outline-red" onclick="exportCSV()"><i class="fas fa-download"></i> Export CSV</button>
             </div>
           </div>
-          <div class="table-container">
-            <table>
-              <thead><tr><th>Matricule</th><th>Nom</th><th>Jan</th><th>Fév</th><th>Mar</th><th>Avr</th><th>Total reçu</th><th>Statut</th></tr></thead>
+          <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:.82rem;min-width:880px;">
+              <thead id="cotisHeadAdmin"></thead>
               <tbody id="cotisBody"></tbody>
             </table>
           </div>
         </div>
 
-        <!-- Opérations bancaires avec répartition -->
-        <div class="panel" style="margin-top:20px;">
+        <!-- Opérations bancaires — trésorier + admin uniquement (masqué pour secrétaire) -->
+        <div class="panel" id="bankOpsPanel" style="margin-top:20px;">
           <div class="panel-title" style="justify-content:space-between;">
             <span><i class="fas fa-university"></i> Opérations bancaires — répartition chèques/virements</span>
             <span id="bankOpsCount" style="font-size:.8rem;color:#aaa;"></span>
@@ -388,6 +395,22 @@
       </div>
 
       <!-- UTILISATEURS -->
+      <!-- JOURNAL D'AUDIT -->
+      <div id="section-journal" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:8px;">
+          <div>
+            <h1 class="dashboard-title" style="margin-bottom:4px;">Journal des opérations</h1>
+            <p class="dashboard-subtitle" style="margin:0;">Traçabilité complète des pointages de cotisations — lecture seule</p>
+          </div>
+          <input type="text" id="adminJournalSearch" placeholder="Filtrer (adhérent, auteur…)"
+                 oninput="loadJournalAdmin()" style="padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:.85rem;width:220px;" />
+        </div>
+        <div class="panel">
+          <div class="panel-title"><i class="fas fa-history"></i> Historique des pointages <span style="font-size:.75rem;color:#aaa;margin-left:8px;font-weight:400;"><i class="fas fa-lock"></i> non modifiable</span></div>
+          <div id="adminJournalContainer"></div>
+        </div>
+      </div>
+
       <div id="section-utilisateurs" style="display:none">
         <h1 class="dashboard-title">Gestion des accès</h1>
         <p class="dashboard-subtitle">Gérez les rôles et les droits des utilisateurs</p>
@@ -582,6 +605,7 @@
   <script src="../js/flash-info.js"></script>
   <script src="../js/planning.js"></script>
   <script src="../js/auth.js"></script>
+  <script src="../js/audit.js"></script>
   <script>
     const user = Auth.requireAuth(['admin', 'secretaire']);
     const ANNEE_COURANTE = '2026';
@@ -598,6 +622,9 @@
         if (avatarEl) { avatarEl.style.background = '#007bff'; avatarEl.style.color = '#fff'; }
         const headerBadge = document.querySelector('.header-actions span');
         if (headerBadge) { headerBadge.style.color = '#007bff'; headerBadge.innerHTML = '<i class="fas fa-pen"></i> Secrétariat'; }
+        // Masquer le panneau opérations bancaires — réservé trésorier + admin
+        const bankPanel = document.getElementById('bankOpsPanel');
+        if (bankPanel) bankPanel.style.display = 'none';
       }
     }
 
@@ -612,6 +639,14 @@
       if (id === 'documents')   loadDocuments();
       if (id === 'cartes')      loadCartes();
       if (id === 'planning')    loadPlanningAdminSection();
+      if (id === 'journal')     loadJournalAdmin();
+    }
+
+    function loadJournalAdmin() {
+      if (typeof AuditLog !== 'undefined') {
+        const filter = (document.getElementById('adminJournalSearch')?.value || '').toLowerCase().trim();
+        AuditLog.render('adminJournalContainer', { max: 500, filterText: filter });
+      }
     }
 
     // ── Accès aux données depuis treasury-data.js ──
@@ -804,58 +839,161 @@
     // ═══════════════════════════════════════════
     // COTISATIONS
     // ═══════════════════════════════════════════
+    // ── Sort/filtre suivi adhérents (admin / secrétaire) ──
+    let _adminSortCol = 'nom', _adminSortDir = 'asc', _adminFiltreStatut = 'tous';
+
+    function sortAdherentsAdmin(col) {
+      _adminSortDir = (_adminSortCol === col && _adminSortDir === 'asc') ? 'desc' : 'asc';
+      _adminSortCol = col;
+      loadCotisations();
+    }
+
+    function filtrerStatutAdmin(val, btn) {
+      _adminFiltreStatut = val;
+      document.querySelectorAll('.adh-filter-btn-admin').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      loadCotisations();
+    }
+
     function loadCotisations() {
-      const data  = getAdherentsData(parseInt(ANNEE_COURANTE));
-      const actifs = data.filter(a => a.actif);
       const MOIS_LABELS = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
+      const filtreTxt = (document.getElementById('cotisSearch')?.value || '').toLowerCase().trim();
 
-      // Grille mensuelle (totaux)
-      if (actifs.length) {
-        const totaux = Array(12).fill(0);
-        actifs.forEach(a => {
-          if (a.mois) a.mois.forEach((v, i) => { totaux[i] += v * 11.50; });
+      const overrides = getMembersOverrides();
+      let data = getAdherentsData(parseInt(ANNEE_COURANTE)).map(a => {
+        const key = getMemberKey(a);
+        const ov = overrides[key] || {};
+        return { ...a, actif: ov.actif !== undefined ? ov.actif : a.actif };
+      });
+      const actifs = data.filter(a => a.actif);
+
+      // Grille mensuelle totaux — uniquement jusqu'au mois en cours (ou jusqu'en déc. pour les années passées)
+      const anneeAffichee = parseInt(ANNEE_COURANTE);
+      const now = new Date();
+      const moisLimite = (anneeAffichee < now.getFullYear())
+        ? 11                          // année passée → tous les mois
+        : (anneeAffichee > now.getFullYear())
+          ? -1                        // année future → aucun mois
+          : now.getMonth();           // année en cours → jusqu'au mois courant (0-indexé)
+
+      const totaux = Array(12).fill(0);
+      actifs.forEach(a => {
+        (a.mois||[]).forEach((v,i) => {
+          if (i <= moisLimite) totaux[i] += v * 11.50;  // ignorer les mois futurs
         });
-        document.getElementById('monthsGrid').innerHTML = MOIS_LABELS.map((m, i) => `
-          <div style="text-align:center;padding:14px 6px;background:${totaux[i]?'#d4edda':'#f8f9fa'};border-radius:8px;">
-            <div style="font-weight:700;font-size:.85rem;">${m}</div>
-            <div style="font-size:.82rem;color:#555;">${totaux[i]?totaux[i].toLocaleString('fr-FR',{minimumFractionDigits:2})+' €':'—'}</div>
-          </div>`).join('');
-      } else {
-        document.getElementById('monthsGrid').innerHTML = MOIS_LABELS.slice(0, 6).map(m => `
-          <div style="text-align:center;padding:14px 6px;background:#f8f9fa;border-radius:8px;">
-            <div style="font-weight:700;font-size:.85rem;">${m}</div><div style="font-size:.82rem;color:#aaa;">—</div>
-          </div>`).join('');
-      }
-
-      // Tableau détail
-      document.getElementById('cotisBody').innerHTML = actifs.map(a => {
-        const mois   = a.mois || Array(12).fill(0);
-        const statut = (a.resteAPayer || 0) <= 0 ? 'payé' : 'retard';
-        const mat    = a.mat || '—';
-        return `<tr>
-          <td><code>${mat}</code></td>
-          <td>${a.nom || ''} ${a.prenom || ''}</td>
-          ${mois.slice(0, 4).map(v => `<td><span class="badge ${v ? 'badge-green' : 'badge-orange'}">${v ? '✓' : '—'}</span></td>`).join('')}
-          <td>${(a.totalRecu || 0).toLocaleString('fr-FR', {minimumFractionDigits:2})} €</td>
-          <td><span class="badge ${statut==='payé'?'badge-green':'badge-orange'}">${statut==='payé'?'À jour':'Retard'}</span></td>
-        </tr>`;
+      });
+      const mgEl = document.getElementById('monthsGrid');
+      if (mgEl) mgEl.innerHTML = MOIS_LABELS.map((m,i) => {
+        const futur = i > moisLimite;
+        const bg = futur ? '#f0f0f0' : totaux[i] ? '#d4edda' : '#f8f9fa';
+        const valeur = futur
+          ? '<span style="color:#ccc;font-size:.75rem;">à venir</span>'
+          : totaux[i] ? totaux[i].toLocaleString('fr-FR',{minimumFractionDigits:2})+' €'
+                      : '<span style="color:#aaa;">—</span>';
+        return `<div style="text-align:center;padding:14px 6px;background:${bg};border-radius:8px;${futur?'opacity:.5;':''}">
+          <div style="font-weight:700;font-size:.85rem;color:${futur?'#aaa':'inherit'}">${m}</div>
+          <div style="font-size:.82rem;color:#555;">${valeur}</div>
+        </div>`;
       }).join('');
+
+      // Filtres
+      let liste = [...actifs];
+      if (filtreTxt) liste = liste.filter(a => (a.nom+' '+a.prenom).toLowerCase().includes(filtreTxt));
+      if (_adminFiltreStatut === 'ajour')   liste = liste.filter(a => (a.resteAPayer||0) <= 0 && (a.totalRecu||0) > 0);
+      if (_adminFiltreStatut === 'partiel') liste = liste.filter(a => (a.resteAPayer||0) > 0  && (a.totalRecu||0) > 0);
+      if (_adminFiltreStatut === 'aucun')   liste = liste.filter(a => (a.totalRecu||0) <= 0);
+
+      // Tri
+      const sortFns = {
+        nom:    (a,b) => (a.nom||'').localeCompare(b.nom||'','fr'),
+        prenom: (a,b) => (a.prenom||'').localeCompare(b.prenom||'','fr'),
+        college:(a,b) => (a.college||'').localeCompare(b.college||'','fr'),
+        recu:   (a,b) => (a.totalRecu||0) - (b.totalRecu||0),
+        reste:  (a,b) => (a.resteAPayer||0) - (b.resteAPayer||0),
+      };
+      const fn = sortFns[_adminSortCol] || sortFns.nom;
+      liste.sort((a,b) => _adminSortDir === 'asc' ? fn(a,b) : fn(b,a));
+
+      const arrow = col => _adminSortCol !== col
+        ? '<span style="color:#ccc;font-size:.65rem;margin-left:2px;">⇅</span>'
+        : (_adminSortDir === 'asc'
+          ? '<span style="color:#cc0000;font-size:.65rem;margin-left:2px;">↑</span>'
+          : '<span style="color:#cc0000;font-size:.65rem;margin-left:2px;">↓</span>');
+      const thS = (col, lbl, align='left') =>
+        `<th style="padding:8px 10px;text-align:${align};cursor:pointer;user-select:none;white-space:nowrap;" onclick="sortAdherentsAdmin('${col}')">${lbl}${arrow(col)}</th>`;
+
+      const headEl = document.getElementById('cotisHeadAdmin');
+      if (headEl) headEl.innerHTML = `<tr style="background:#f5f5f5;">
+        <th style="padding:8px 10px;">Mat.</th>
+        ${thS('nom',    'Nom')}
+        ${thS('prenom', 'Prénom')}
+        ${thS('college','Col.','center')}
+        ${MOIS_LABELS.map(m=>`<th style="padding:8px 6px;text-align:center;font-size:.73rem;">${m}</th>`).join('')}
+        ${thS('recu',  'Reçu',  'right')}
+        ${thS('reste', 'Reste', 'right')}
+        <th style="padding:8px 10px;text-align:center;">Statut</th>
+        <th style="padding:8px 10px;text-align:center;font-size:.73rem;">Actif</th>
+      </tr>`;
+
+      document.getElementById('cotisBody').innerHTML = liste.map(a => {
+        const mois   = a.mois || Array(12).fill(0);
+        const reste  = a.resteAPayer || 0;
+        const aJour  = reste <= 0 && (a.totalRecu||0) > 0;
+        const rowBg  = reste > 0 && a.totalRecu === 0 ? 'background:#fff5f5;' : reste > 0 ? 'background:#fffbf0;' : '';
+        const mat    = a.mat || '—';
+        const moisCells = mois.map(v =>
+          `<td style="padding:4px 6px;text-align:center;"><span style="display:inline-block;width:20px;height:20px;border-radius:50%;background:${v?'#28a745':'#eee'};color:${v?'#fff':'#bbb'};font-size:.68rem;line-height:20px;">${v?'✓':''}</span></td>`
+        ).join('');
+        const toggleBtn = `<button onclick="toggleActifAdmin('${getMemberKey(a)}',${a.actif})"
+          style="padding:2px 7px;border-radius:5px;border:1px solid ${a.actif?'#ced4da':'#c3e6cb'};cursor:pointer;font-size:.7rem;background:${a.actif?'#f8f9fa':'#d4edda'};color:${a.actif?'#6c757d':'#155724'};">
+          ${a.actif?'Actif':'Inactif'}
+        </button>`;
+        return `<tr style="${rowBg}border-bottom:1px solid #f0f0f0;">
+          <td style="padding:6px 10px;font-size:.78rem;"><code>${mat}</code></td>
+          <td style="padding:6px 10px;font-weight:700;">${a.nom||''}</td>
+          <td style="padding:6px 10px;">${a.prenom||''}</td>
+          <td style="padding:6px 10px;text-align:center;">${a.college||'—'}</td>
+          ${moisCells}
+          <td style="padding:6px 10px;text-align:right;font-weight:700;color:#28a745;">${(a.totalRecu||0)>0?(a.totalRecu).toLocaleString('fr-FR',{minimumFractionDigits:2})+' €':'—'}</td>
+          <td style="padding:6px 10px;text-align:right;font-weight:700;color:${reste>0?'#cc0000':reste<0?'#007bff':'#28a745'};">${reste!==0?(reste).toLocaleString('fr-FR',{minimumFractionDigits:2})+' €':'✓'}</td>
+          <td style="padding:6px 10px;text-align:center;"><span class="badge ${aJour?'badge-green':'badge-orange'}">${aJour?'À jour':'Retard'}</span></td>
+          <td style="padding:6px 10px;text-align:center;">${toggleBtn}</td>
+        </tr>`;
+      }).join('') || `<tr><td colspan="18" style="padding:24px;text-align:center;color:#aaa;">Aucun adhérent trouvé.</td></tr>`;
+    }
+
+    function toggleActifAdmin(key, currentActif) {
+      const ov = getMembersOverrides();
+      if (!ov[key]) ov[key] = {};
+      ov[key].actif = !currentActif;
+      saveMembersOverrides(ov);
+      if (typeof AuditLog !== 'undefined') {
+        AuditLog.add({
+          auteur: user?.name || '—', role: user?.role || 'admin',
+          action: 'modif_pointage',
+          adherent: key.replace('_', ' '),
+          details: `Statut adhérent : ${currentActif ? 'actif → inactif' : 'inactif → actif'}`
+        });
+      }
+      loadCotisations();
+      toast(currentActif ? 'Adhérent rendu inactif' : 'Adhérent réactivé ✓', currentActif ? '#6c757d' : '#28a745');
     }
 
     function exportCSV() {
       const data = getAdherentsData(parseInt(ANNEE_COURANTE));
+      const MOIS_LABELS = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
       const rows = [
-        ['Matricule','Nom','Prénom','Collège','Actif','Total reçu','Reste à payer','Entrée'],
-        ...data.map((a, i) => [
+        ['Matricule','Nom','Prénom','Collège','Actif',...MOIS_LABELS,'Total reçu','Reste à payer'],
+        ...data.map((a,i) => [
           a.mat || `V-${String(i+1).padStart(3,'0')}`,
-          a.nom || '', a.prenom || '', a.college || '',
+          a.nom||'', a.prenom||'', a.college||'',
           a.actif ? 'Oui' : 'Non',
-          (a.totalRecu || 0).toFixed(2),
-          (a.resteAPayer || 0).toFixed(2),
-          a.dateEntree || ''
+          ...(a.mois||Array(12).fill(0)),
+          (a.totalRecu||0).toFixed(2),
+          (a.resteAPayer||0).toFixed(2)
         ])
       ];
-      const csv    = rows.map(r => r.join(';')).join('\n');
+      const csv    = rows.map(r => r.map(c=>'"'+(c+'').replace(/"/g,'""')+'"').join(';')).join('\n');
       const anchor = document.createElement('a');
       anchor.href     = 'data:text/csv;charset=utf-8,﻿' + encodeURIComponent(csv);
       anchor.download = `adherents_fo_valeo_${ANNEE_COURANTE}.csv`;
@@ -863,7 +1001,7 @@
     }
 
     function syncSheets() { loadAdherents(); toast('✅ Données rechargées depuis la base locale.'); }
-    function filterCotis(val) { loadCotisations(val); }
+    function filterCotis() { loadCotisations(); }
 
     // ═══════════════════════════════════════════
     // TOAST
@@ -1203,6 +1341,8 @@
     let _bankOps = [];
 
     async function loadBankOps() {
+      // Panneau réservé trésorier + admin uniquement
+      if (user && user.role === 'secretaire') return;
       try {
         const token = Auth.getToken();
         const res = await fetch(`${API}/api/treasury/consolidated?annee=${ANNEE_COURANTE}`, {
@@ -1335,6 +1475,18 @@
         createdAt: new Date().toISOString()
       });
       localStorage.setItem('fo_repartitions', JSON.stringify(repartitions));
+      // Audit
+      if (typeof AuditLog !== 'undefined') {
+        const nom = repartitions[repartitions.length - 1];
+        AuditLog.add({
+          auteur: user?.name || '—',
+          role: user?.role || 'admin',
+          action: 'repartition',
+          adherent: result.map(r => { const a = adhs.find(x => getMemberKey(x) === r.membreKey); return a ? `${a.nom} ${a.prenom||''}`.trim() : r.membreKey; }).join(', '),
+          montant: total,
+          details: `Répartition sur ${result.length} adhérent(s) · ${total.toFixed(2)} € · Op. du ${op.date} — ${(op.libelle||'').substring(0, 50)}`
+        });
+      }
       closeRepartir();
       toast(`✅ Répartition enregistrée sur ${result.length} adhérent(s)`);
     }

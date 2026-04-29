@@ -66,7 +66,7 @@
             </div>
           </div>
           <div class="info-card">
-            <div class="info-card-label">Cotisations 2024</div>
+            <div class="info-card-label" id="cotisAnneeLabel">Cotisations</div>
             <div class="info-card-value" id="cotisTotal">—</div>
             <div class="info-card-sub">sur 12 mois prévus</div>
           </div>
@@ -183,16 +183,19 @@
       document.getElementById('profilRole').textContent = user.role.charAt(0).toUpperCase()+user.role.slice(1);
     }
 
-    const COTIS_DEMO = [
-      { mois:'Janvier 2024',  montant:'24,50 €', mode:'Prélèvement', statut:'payé' },
-      { mois:'Février 2024',  montant:'24,50 €', mode:'Prélèvement', statut:'payé' },
-      { mois:'Mars 2024',     montant:'24,50 €', mode:'Prélèvement', statut:'payé' },
-      { mois:'Avril 2024',    montant:'24,50 €', mode:'Prélèvement', statut:'payé' },
-      { mois:'Mai 2024',      montant:'—',        mode:'—',           statut:'en attente' },
-      { mois:'Juin 2024',     montant:'—',        mode:'—',           statut:'en attente' },
-    ];
+    const ANNEE_COTIS = new Date().getFullYear();
+    const MOIS_NOMS_COTIS = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+    const moisCourant = new Date().getMonth(); // 0-indexed
+    // Générer dynamiquement les mois payés (jusqu'au mois précédent) et les mois en attente (jusqu'à décembre)
+    const COTIS_DEMO = MOIS_NOMS_COTIS.map((nom, i) => ({
+      mois: `${nom} ${ANNEE_COTIS}`,
+      montant: i < moisCourant ? '24,50 €' : '—',
+      mode: i < moisCourant ? 'Prélèvement' : '—',
+      statut: i < moisCourant ? 'payé' : 'en attente',
+    })).filter((_, i) => i <= Math.max(moisCourant + 1, 5)); // Afficher jusqu'au mois en cours + 1 (min 6 lignes)
 
     function loadCotisations() {
+      document.getElementById('cotisAnneeLabel').textContent = `Cotisations ${ANNEE_COTIS}`;
       const paid = COTIS_DEMO.filter(c => c.statut === 'payé');
       document.getElementById('cotisTotal').textContent = `${paid.length}/12`;
       document.getElementById('lastPayment').textContent = paid.at(-1)?.mois?.split(' ')[0] || '—';

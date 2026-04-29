@@ -42,6 +42,9 @@
         <div class="sidebar-nav-item" onclick="showSection('cotisations')">
           <i class="fas fa-users"></i> Suivi adhérents
         </div>
+        <div class="sidebar-nav-item" onclick="showSection('journal')">
+          <i class="fas fa-history"></i> Journal
+        </div>
       </nav>
       <div class="sidebar-logout">
         <button onclick="Auth.logout()" class="btn btn-outline-white btn-sm" style="width:100%">
@@ -56,6 +59,15 @@
       <div id="section-import">
         <h1 class="dashboard-title">Import relevé Crédit Agricole</h1>
         <p class="dashboard-subtitle">Téléchargez votre relevé depuis l'application CA puis importez-le ici.</p>
+
+        <!-- Bannière pointage en mémoire -->
+        <div id="pointageSauvegardeBanner" style="display:none;padding:12px 18px;background:#d4edda;border-radius:10px;margin-bottom:16px;display:none;align-items:center;justify-content:space-between;gap:12px;">
+          <span style="font-size:.88rem;color:#155724;"><i class="fas fa-database"></i> <strong>Pointage en mémoire</strong> — <span id="pointageSauvegardeInfo"></span></span>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-sm" style="background:#28a745;color:#fff;" onclick="showSection('pointage');setActiveNav('pointage')"><i class="fas fa-check-double"></i> Reprendre</button>
+            <button class="btn btn-sm" style="background:#fff;color:#666;border:1px solid #ccc;" onclick="effacerPointage()"><i class="fas fa-times"></i> Effacer</button>
+          </div>
+        </div>
 
         <!-- Instructions -->
         <div class="panel" style="border-left:4px solid #f0ad4e;">
@@ -135,6 +147,7 @@
               <button class="btn btn-sm filter-btn" data-filter="a_valider" onclick="filtrerOps('a_valider', this)" style="background:#cce5ff;color:#004085;border-color:#b8daff;">🔵 À valider</button>
               <button class="btn btn-sm filter-btn" data-filter="non_identifie" onclick="filtrerOps('non_identifie', this)" style="background:#fff3cd;color:#856404;border-color:#ffeeba;">⚠️ Non identifiés</button>
               <button class="btn btn-sm btn-red" onclick="validerTous()"><i class="fas fa-check-double"></i> Tout valider</button>
+              <button class="btn btn-sm" style="background:#6c757d;color:#fff;" onclick="effacerPointage()" title="Effacer toutes les opérations en mémoire"><i class="fas fa-trash-alt"></i> Effacer</button>
             </div>
           </div>
           <div class="table-container">
@@ -228,14 +241,26 @@
           </div>
         </div>
 
-        <!-- KPI -->
+        <!-- KPI (cliquables pour filtrer) -->
         <div class="cards-row" id="cotisKPI" style="margin-top:16px;"></div>
 
+        <!-- Filtres rapides statut -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0;">
+          <span style="font-size:.82rem;color:#888;align-self:center;">Filtre rapide :</span>
+          <button class="btn btn-sm adh-filter-btn active" onclick="filtrerStatut('tous',this)" style="font-size:.78rem;">Tous</button>
+          <button class="btn btn-sm adh-filter-btn" onclick="filtrerStatut('ajour',this)" style="font-size:.78rem;background:#d4edda;color:#155724;border-color:#c3e6cb;">✓ À jour</button>
+          <button class="btn btn-sm adh-filter-btn" onclick="filtrerStatut('partiel',this)" style="font-size:.78rem;background:#fff3cd;color:#856404;border-color:#ffeeba;">⚠ Partiel</button>
+          <button class="btn btn-sm adh-filter-btn" onclick="filtrerStatut('aucun',this)" style="font-size:.78rem;background:#f8d7da;color:#721c24;border-color:#f5c6cb;">✗ Aucun</button>
+        </div>
+
         <!-- Grille mensuelle -->
-        <div class="panel" style="margin-top:20px;">
-          <div class="panel-title"><i class="fas fa-calendar-alt"></i> Pointage mensuel <span id="cotisAnneeLabel" style="color:#cc0000;margin-left:8px;"></span></div>
+        <div class="panel" style="margin-top:8px;">
+          <div class="panel-title" style="justify-content:space-between;">
+            <span><i class="fas fa-calendar-alt"></i> Pointage mensuel <span id="cotisAnneeLabel" style="color:#cc0000;margin-left:8px;"></span></span>
+            <span style="font-size:.75rem;color:#aaa;">Cliquez sur un en-tête pour trier</span>
+          </div>
           <div style="overflow-x:auto;">
-            <table id="cotisTable" style="width:100%;border-collapse:collapse;font-size:.82rem;min-width:900px;">
+            <table id="cotisTable" style="width:100%;border-collapse:collapse;font-size:.82rem;min-width:980px;">
               <thead id="cotisTableHead"></thead>
               <tbody id="cotisTableBody"></tbody>
             </table>
@@ -243,7 +268,37 @@
         </div>
       </div>
 
+      <!-- ═══ JOURNAL D'AUDIT ═══ -->
+      <div id="section-journal" style="display:none;">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:8px;">
+          <div>
+            <h1 class="dashboard-title" style="margin-bottom:4px;">Journal des opérations</h1>
+            <p class="dashboard-subtitle" style="margin:0;">Traçabilité complète de toutes les actions de pointage — lecture seule</p>
+          </div>
+          <input type="text" id="journalSearch" placeholder="Filtrer (adhérent, auteur…)"
+                 oninput="loadJournal()" style="padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:.85rem;width:220px;" />
+        </div>
+        <div class="panel">
+          <div class="panel-title"><i class="fas fa-history"></i> Historique des pointages <span style="font-size:.75rem;color:#aaa;margin-left:8px;font-weight:400;">(non modifiable)</span></div>
+          <div id="journalContainer"></div>
+        </div>
+      </div>
+
     </main>
+  </div>
+
+  <!-- MODAL détail ligne bilan -->
+  <div id="modalBilanDetail" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9200;align-items:center;justify-content:center;" onclick="if(event.target===this)fermerDetailBilan()">
+    <div style="background:#fff;border-radius:14px;padding:28px;max-width:680px;width:95%;max-height:88vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.22);">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;">
+        <div>
+          <h3 style="margin:0 0 4px;font-size:1.1rem;" id="bilanDetailTitle"></h3>
+          <div style="font-size:.88rem;color:#888;">Montant au bilan : <strong id="bilanDetailMontant" style="color:#cc0000;"></strong></div>
+        </div>
+        <button onclick="fermerDetailBilan()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:#aaa;padding:4px;">✕</button>
+      </div>
+      <div id="bilanDetailOps"></div>
+    </div>
   </div>
 
   <!-- MODAL attribution manuelle -->
@@ -261,7 +316,31 @@
     </div>
   </div>
 
+  <!-- MODAL répartition chèque -->
+  <div id="modalRepartir" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9100;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:12px;padding:28px;max-width:520px;width:94%;max-height:88vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.22);">
+      <h3 style="margin-bottom:6px;"><i class="fas fa-cut" style="color:#fd7e14;"></i> Répartir sur plusieurs adhérents</h3>
+      <p style="font-size:.82rem;color:#666;margin-bottom:4px;" id="repartirLibelle"></p>
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px;padding:10px 14px;background:#fff3cd;border-radius:8px;font-size:.88rem;">
+        <span>Montant total : <strong id="repartirTotal" style="color:#856404;"></strong></span>
+        <span style="margin-left:auto;">Restant : <strong id="repartirRestant" style="color:#f0ad4e;"></strong></span>
+      </div>
+      <div id="repartirLignes"></div>
+      <button class="btn btn-sm" style="background:#f0f0f0;color:#333;margin-bottom:18px;" onclick="addRepartirLigne()">
+        <i class="fas fa-plus"></i> Ajouter une ligne
+      </button>
+      <div style="display:flex;gap:12px;">
+        <button class="btn btn-red" onclick="saveRepartirTreso()"><i class="fas fa-check"></i> Enregistrer</button>
+        <button class="btn btn-outline-red" onclick="fermerRepartir()"><i class="fas fa-times"></i> Annuler</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast notification -->
+  <div id="toastTresor" style="position:fixed;bottom:28px;right:28px;background:#28a745;color:#fff;padding:12px 22px;border-radius:10px;font-size:.9rem;font-weight:600;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.18);opacity:0;transition:opacity .3s;pointer-events:none;">OK</div>
+
   <script src="../js/auth.js"></script>
+  <script src="../js/audit.js"></script>
   <script src="../js/treasury-data.js"></script>
   <script src="../js/flash-info.js"></script>
   <script src="../js/planning.js"></script>
@@ -286,6 +365,7 @@
       if (id === 'pointage') afficherOps();
       if (id === 'bilan') chargerBilan();
       if (id === 'cotisations') chargerAdherents();
+      if (id === 'journal') loadJournal();
     }
 
     function setActiveNav(id) {
@@ -341,6 +421,8 @@
         }
 
         operations = data.operations;
+        sauvegarderPointage();
+        afficherBannierePointage();
         afficherResultatImport(data.stats);
         uploadArea.style.display = 'block';
 
@@ -348,6 +430,8 @@
         // Mode démo : parser en local
         const text = await file.text();
         operations = parseCSVLocal(text);
+        sauvegarderPointage();
+        afficherBannierePointage();
         const stats = calculerStats(operations);
         document.getElementById('importProgress').style.display = 'none';
         afficherResultatImport(stats);
@@ -439,10 +523,12 @@
           <td>${op.adherent ? `<strong>${op.adherent}</strong>${op.montantAttendu ? `<br><small style="color:#aaa;">attendu : ${op.montantAttendu} €</small>` : ''}` : '<span style="color:#aaa;">—</span>'}</td>
           <td><span class="badge ${badgeClass}" style="${badgeStyle}">${LABELS[op.statut] || op.statut}</span></td>
           <td>
-            ${op.valide ? '<span style="color:#28a745;font-size:.8rem;">✓ Validé</span>' : `
-              <div style="display:flex;gap:4px;">
-                <button class="btn btn-sm" style="background:#28a745;color:#fff;padding:4px 10px;" onclick="validerOp(${idx})">✓</button>
-                <button class="btn btn-sm btn-outline-red" style="padding:4px 10px;" onclick="ouvrirModal(${idx})"><i class="fas fa-user-tag"></i></button>
+            ${op.valide
+            ? `<span style="color:#28a745;font-size:.8rem;">✓ Validé${op.reparti ? ' <span style="color:#fd7e14;">(réparti)</span>' : ''}</span>`
+            : `<div style="display:flex;gap:4px;flex-wrap:wrap;">
+                <button class="btn btn-sm" style="background:#28a745;color:#fff;padding:4px 10px;" onclick="validerOp(${idx})" title="Valider">✓</button>
+                <button class="btn btn-sm btn-outline-red" style="padding:4px 10px;" onclick="ouvrirModal(${idx})" title="Attribuer"><i class="fas fa-user-tag"></i></button>
+                ${op.credit > 0 ? `<button class="btn btn-sm" style="background:#fd7e14;color:#fff;padding:4px 8px;font-size:.75rem;" onclick="ouvrirRepartir(${idx})" title="Répartir sur plusieurs adhérents"><i class="fas fa-cut"></i></button>` : ''}
               </div>`}
           </td>
         </tr>`;
@@ -457,15 +543,44 @@
 
     function validerOp(idx) {
       if (!operations[idx]) return;
-      operations[idx].valide = true;
-      operations[idx].statut = 'valide_manuellement';
+      const op = operations[idx];
+      const prevStatut = op.statut;
+      op.valide = true;
+      op.statut = 'valide_manuellement';
+      if (typeof AuditLog !== 'undefined') {
+        AuditLog.add({
+          auteur: user?.name || '—',
+          role: user?.role || 'tresorier',
+          action: 'valide_manuel',
+          adherent: op.adherent || null,
+          montant: op.credit || op.debit || null,
+          details: `Validation manuelle · Statut précédent: ${prevStatut} · Op. du ${op.date} — ${(op.libelle||'').substring(0, 50)}`
+        });
+      }
+      sauvegarderPointage();
       mettreAJourStats();
       renderOps(filterActif);
     }
 
     function validerTous() {
       if (!confirm(`Valider toutes les ${operations.length} opérations ?`)) return;
-      operations.forEach(op => { op.valide = true; op.statut = op.statut === 'non_identifie' ? 'valide_manuellement' : op.statut; });
+      operations.forEach((op, idx) => {
+        if (!op.valide) {
+          op.valide = true;
+          op.statut = op.statut === 'non_identifie' ? 'valide_manuellement' : op.statut;
+          if (typeof AuditLog !== 'undefined') {
+            AuditLog.add({
+              auteur: user?.name || '—',
+              role: user?.role || 'tresorier',
+              action: 'valide_manuel',
+              adherent: op.adherent || null,
+              montant: op.credit || op.debit || null,
+              details: `Validation globale (tout valider) · Op. du ${op.date} — ${(op.libelle||'').substring(0, 40)}`
+            });
+          }
+        }
+      });
+      sauvegarderPointage();
       mettreAJourStats();
       renderOps(filterActif);
     }
@@ -497,10 +612,23 @@
     function confirmerAttribution() {
       const adherent = document.getElementById('modalAdherent').value;
       if (!adherent || modalIdx === null) return;
-      operations[modalIdx].adherent = adherent;
-      operations[modalIdx].statut = 'valide_manuellement';
-      operations[modalIdx].valide = true;
+      const op = operations[modalIdx];
+      const prevAdherent = op.adherent;
+      op.adherent = adherent;
+      op.statut = 'valide_manuellement';
+      op.valide = true;
+      if (typeof AuditLog !== 'undefined') {
+        AuditLog.add({
+          auteur: user?.name || '—',
+          role: user?.role || 'tresorier',
+          action: prevAdherent ? 'modif_pointage' : 'attribution',
+          adherent: adherent,
+          montant: op.credit || op.debit || null,
+          details: `Attribution${prevAdherent ? ` (modif. de: ${prevAdherent})` : ''} · Op. du ${op.date} — ${(op.libelle||'').substring(0, 50)}`
+        });
+      }
       fermerModal();
+      sauvegarderPointage();
       mettreAJourStats();
       renderOps(filterActif);
     }
@@ -529,35 +657,53 @@
           <div class="info-card-value" style="color:#cc0000;">${fmt(b.totalDebits||0)}</div>
         </div>
         <div class="info-card" style="border-top-color:${soldeColor};">
-          <div class="info-card-label">Solde fin ${annee==='2026'?'(prévisionnel)':''}</div>
+          <div class="info-card-label">Solde fin ${annee===2026?'(prévisionnel)':''}</div>
           <div class="info-card-value" style="color:${soldeColor};">${fmt(soldeFin)}</div>
         </div>`;
 
       const rowStyle = 'padding:8px 12px;border-bottom:1px solid #f0f0f0;';
       const labelTd  = (lbl) => `<td style="${rowStyle}">${lbl}</td>`;
-      const montantTd= (v,color='')=>`<td style="${rowStyle};text-align:right;font-weight:600;color:${color||'inherit'};">${fmt(v)}</td>`;
+      const montantTd = (v, color='', lbl='') => {
+        const safe = lbl.replace(/'/g, "\\'");
+        const clickable = lbl ? `cursor:pointer;text-decoration:underline dotted ${color||'#aaa'};` : '';
+        const onclick   = lbl ? `onclick="ouvrirDetailBilan('${safe}',${v||0})"` : '';
+        const icon      = lbl ? `<i class="fas fa-search-plus" style="font-size:.6rem;margin-left:4px;opacity:.45;"></i>` : '';
+        return `<td style="${rowStyle};text-align:right;font-weight:600;color:${color||'inherit'};${clickable}" ${onclick} title="${lbl?'Cliquer pour voir le détail':''}">${fmt(v)}${icon}</td>`;
+      };
 
       document.getElementById('bilanCreditsBody').innerHTML = [
-        ['Cotisations perçues',b.cotisationsRecues,'#28a745'],
-        ['Remboursement frais tribunaux',b.remboursementsTribunaux,'#28a745'],
-      ].map(([lbl,v,c])=>`<tr>${labelTd(lbl)}${montantTd(v,c)}</tr>`).join('');
+        ['Cotisations perçues',           b.cotisationsRecues,       '#28a745'],
+        ['Remboursement frais tribunaux',  b.remboursementsTribunaux, '#28a745'],
+      ].map(([lbl,v,c])=>`<tr class="bilan-row-hover">${labelTd(lbl)}${montantTd(v,c,lbl)}</tr>`).join('');
       document.getElementById('bilanCreditsFoot').innerHTML =
-        `<tr style="background:#f0fff4;font-weight:700;"><td style="${rowStyle}">TOTAL CRÉDITS</td><td style="${rowStyle};text-align:right;color:#28a745;">${fmt(b.totalCredits||0)}</td></tr>`;
+        `<tr style="background:#f0fff4;font-weight:700;">
+          <td style="${rowStyle}">TOTAL CRÉDITS</td>
+          <td style="${rowStyle};text-align:right;color:#28a745;cursor:pointer;text-decoration:underline dotted #28a745;"
+              onclick="ouvrirDetailBilan('Tous les crédits',${b.totalCredits||0})" title="Voir toutes les opérations crédit">
+            ${fmt(b.totalCredits||0)}<i class="fas fa-search-plus" style="font-size:.6rem;margin-left:4px;opacity:.45;"></i>
+          </td>
+        </tr>`;
 
       document.getElementById('bilanDebitsBody').innerHTML = [
-        ['Cotisations Fédération FO Métaux',b.cotisationsFed,''],
-        ['Cotisations UD Somme',b.cotisationsUD,''],
-        ['Cartes syndicales',b.cartes,''],
-        ['Timbres syndicaux',b.timbres,''],
-        ['Frais de tribunaux',b.fraisTribunaux,''],
-        ['Frais de gestion',b.fraisGestion,''],
-        ['Frais propagande',b.fraisPropagande,''],
-        ['Frais repas AG',b.fraisRepasAG,''],
-        ['Frais gestion administrative',b.fraisGestionAdmin,''],
-        ['Frais de fonctionnement',b.fraisFonctionnement,''],
-      ].filter(([,v])=>v>0).map(([lbl,v])=>`<tr>${labelTd(lbl)}${montantTd(v,'#cc0000')}</tr>`).join('');
+        ['Cotisations Fédération FO Métaux', b.cotisationsFed,     ''],
+        ['Cotisations UD Somme',             b.cotisationsUD,      ''],
+        ['Cartes syndicales',                b.cartes,             ''],
+        ['Timbres syndicaux',                b.timbres,            ''],
+        ['Frais de tribunaux',               b.fraisTribunaux,     ''],
+        ['Frais de gestion',                 b.fraisGestion,       ''],
+        ['Frais propagande',                 b.fraisPropagande,    ''],
+        ['Frais repas AG',                   b.fraisRepasAG,       ''],
+        ['Frais gestion administrative',     b.fraisGestionAdmin,  ''],
+        ['Frais de fonctionnement',          b.fraisFonctionnement,''],
+      ].filter(([,v])=>v>0).map(([lbl,v])=>`<tr class="bilan-row-hover">${labelTd(lbl)}${montantTd(v,'#cc0000',lbl)}</tr>`).join('');
       document.getElementById('bilanDebitsFoot').innerHTML =
-        `<tr style="background:#fff5f5;font-weight:700;"><td style="${rowStyle}">TOTAL DÉBITS</td><td style="${rowStyle};text-align:right;color:#cc0000;">${fmt(b.totalDebits||0)}</td></tr>`;
+        `<tr style="background:#fff5f5;font-weight:700;">
+          <td style="${rowStyle}">TOTAL DÉBITS</td>
+          <td style="${rowStyle};text-align:right;color:#cc0000;cursor:pointer;text-decoration:underline dotted #cc0000;"
+              onclick="ouvrirDetailBilan('Tous les débits',${b.totalDebits||0})" title="Voir toutes les opérations débit">
+            ${fmt(b.totalDebits||0)}<i class="fas fa-search-plus" style="font-size:.6rem;margin-left:4px;opacity:.45;"></i>
+          </td>
+        </tr>`;
     }
 
     function fmt(v) { return (v||0).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €'; }
@@ -587,71 +733,144 @@
       _dlCSV(rows, `bilan_${annee}.csv`);
     }
 
-    // ── Suivi adhérents (grille mensuelle) ──
+    // ── Suivi adhérents — tri, filtre, toggle inactif ──
     const MOIS_NOMS = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
+    let _sortCol = 'nom', _sortDir = 'asc', _filtreStatut = 'tous';
+
+    function sortAdherents(col) {
+      _sortDir = (_sortCol === col && _sortDir === 'asc') ? 'desc' : 'asc';
+      _sortCol = col;
+      chargerAdherents();
+    }
+
+    function filtrerStatut(val, btn) {
+      _filtreStatut = val;
+      document.querySelectorAll('.adh-filter-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      chargerAdherents();
+    }
+
+    // ── Overlay actif/inactif (partagé avec admin — clé fo_members_data) ──
+    function getMembresOverrides() {
+      try { return JSON.parse(localStorage.getItem('fo_members_data') || '{}'); } catch { return {}; }
+    }
+    function saveMembresOverrides(obj) { localStorage.setItem('fo_members_data', JSON.stringify(obj)); }
+    function getMembreKey(a) { return `${(a.nom||'').toUpperCase()}_${(a.prenom||'').toUpperCase()}`; }
+
+    function toggleActifMembre(nomKey, currentActif) {
+      const ov = getMembresOverrides();
+      if (!ov[nomKey]) ov[nomKey] = {};
+      ov[nomKey].actif = !currentActif;
+      saveMembresOverrides(ov);
+      if (typeof AuditLog !== 'undefined') {
+        AuditLog.add({
+          auteur: user?.name || '—', role: user?.role || 'tresorier',
+          action: 'modif_pointage',
+          adherent: nomKey.replace('_', ' '),
+          details: `Statut adhérent : ${currentActif ? 'actif → inactif' : 'inactif → actif'}`
+        });
+      }
+      chargerAdherents();
+      toastTresor(currentActif ? 'Adhérent rendu inactif' : 'Adhérent réactivé ✓', currentActif ? '#6c757d' : '#28a745');
+    }
 
     function chargerAdherents() {
-      const annee = parseInt(document.getElementById('cotisAnneeSelect').value)||2026;
+      const annee = parseInt(document.getElementById('cotisAnneeSelect').value) || 2026;
       const showInactifs = document.getElementById('showInactifsCheck').checked;
-      const filtre = (document.getElementById('rechercheAdherent').value||'').toLowerCase().trim();
+      const filtre = (document.getElementById('rechercheAdherent').value || '').toLowerCase().trim();
       document.getElementById('cotisAnneeLabel').textContent = annee;
 
-      let liste = (typeof TREASURY_DATA!=='undefined')
-        ? TREASURY_DATA.adherents[annee] || []
-        : [];
+      const overrides = getMembresOverrides();
+      const applyOv = arr => arr.map(a => {
+        const key = getMembreKey(a);
+        const o = overrides[key] || {};
+        return { ...a, actif: o.actif !== undefined ? o.actif : a.actif, _key: key };
+      });
 
-      if (!showInactifs) liste = liste.filter(a=>a.actif);
-      if (filtre) liste = liste.filter(a=>(a.nom+' '+a.prenom).toLowerCase().includes(filtre));
+      let base = (typeof TREASURY_DATA !== 'undefined') ? (TREASURY_DATA.adherents[annee] || []) : [];
+      base = applyOv(base);
 
-      // KPI
-      const actifs  = liste.filter(a=>a.actif);
-      const aJour   = actifs.filter(a=>a.resteAPayer<=0&&a.totalRecu>0).length;
-      const partiel = actifs.filter(a=>a.resteAPayer>0&&a.totalRecu>0).length;
-      const aucun   = actifs.filter(a=>a.totalRecu<=0&&a.totalDu>0).length;
-      const totalRecu = actifs.reduce((s,a)=>s+(a.totalRecu||0),0);
+      // KPI sur tous les actifs (avant filtre statut / texte)
+      const actifsAll = base.filter(a => a.actif);
+      const kpiAJour   = actifsAll.filter(a => (a.resteAPayer||0) <= 0 && (a.totalRecu||0) > 0).length;
+      const kpiPartiel = actifsAll.filter(a => (a.resteAPayer||0) > 0 && (a.totalRecu||0) > 0).length;
+      const kpiAucun   = actifsAll.filter(a => (a.totalRecu||0) <= 0 && (a.totalDu||0) > 0).length;
+      const kpiTotal   = actifsAll.reduce((s,a) => s + (a.totalRecu||0), 0);
+
       document.getElementById('cotisKPI').innerHTML = `
-        <div class="info-card" style="border-top-color:#28a745;">
-          <div class="info-card-label">À jour (cotisation soldée)</div>
-          <div class="info-card-value" style="color:#28a745;">${aJour}</div>
+        <div class="info-card" style="border-top-color:#28a745;cursor:pointer;" onclick="filtrerStatut('ajour',document.querySelectorAll('.adh-filter-btn')[1])">
+          <div class="info-card-label">À jour</div>
+          <div class="info-card-value" style="color:#28a745;">${kpiAJour}</div>
         </div>
-        <div class="info-card" style="border-top-color:#f0ad4e;">
+        <div class="info-card" style="border-top-color:#f0ad4e;cursor:pointer;" onclick="filtrerStatut('partiel',document.querySelectorAll('.adh-filter-btn')[2])">
           <div class="info-card-label">Paiement partiel</div>
-          <div class="info-card-value" style="color:#f0ad4e;">${partiel}</div>
+          <div class="info-card-value" style="color:#f0ad4e;">${kpiPartiel}</div>
         </div>
-        <div class="info-card" style="border-top-color:#cc0000;">
+        <div class="info-card" style="border-top-color:#cc0000;cursor:pointer;" onclick="filtrerStatut('aucun',document.querySelectorAll('.adh-filter-btn')[3])">
           <div class="info-card-label">Aucun paiement</div>
-          <div class="info-card-value" style="color:#cc0000;">${aucun}</div>
+          <div class="info-card-value" style="color:#cc0000;">${kpiAucun}</div>
         </div>
         <div class="info-card" style="border-top-color:#007bff;">
           <div class="info-card-label">Total encaissé ${annee}</div>
-          <div class="info-card-value" style="color:#007bff;">${fmt(totalRecu)}</div>
+          <div class="info-card-value" style="color:#007bff;">${fmt(kpiTotal)}</div>
         </div>`;
 
-      // En-tête grille
+      // Filtres
+      let liste = [...base];
+      if (!showInactifs) liste = liste.filter(a => a.actif);
+      if (filtre) liste = liste.filter(a => (a.nom + ' ' + a.prenom).toLowerCase().includes(filtre));
+      if (_filtreStatut === 'ajour')   liste = liste.filter(a => (a.resteAPayer||0) <= 0 && (a.totalRecu||0) > 0);
+      if (_filtreStatut === 'partiel') liste = liste.filter(a => (a.resteAPayer||0) > 0  && (a.totalRecu||0) > 0);
+      if (_filtreStatut === 'aucun')   liste = liste.filter(a => (a.totalRecu||0) <= 0);
+
+      // Tri
+      const sortFns = {
+        nom:    (a,b) => (a.nom||'').localeCompare(b.nom||'','fr'),
+        prenom: (a,b) => (a.prenom||'').localeCompare(b.prenom||'','fr'),
+        college:(a,b) => (a.college||'').localeCompare(b.college||'','fr'),
+        mode:   (a,b) => (a.modePaiement||'').localeCompare(b.modePaiement||'','fr'),
+        recu:   (a,b) => (a.totalRecu||0)   - (b.totalRecu||0),
+        du:     (a,b) => (a.totalDu||0)     - (b.totalDu||0),
+        reste:  (a,b) => (a.resteAPayer||0) - (b.resteAPayer||0),
+      };
+      const fn = sortFns[_sortCol] || sortFns.nom;
+      liste.sort((a,b) => _sortDir === 'asc' ? fn(a,b) : fn(b,a));
+
+      // En-têtes cliquables
+      const arrow = col => _sortCol !== col
+        ? '<span style="color:#ccc;font-size:.65rem;margin-left:2px;">⇅</span>'
+        : (_sortDir === 'asc' ? '<span style="color:#cc0000;font-size:.65rem;margin-left:2px;">↑</span>'
+                               : '<span style="color:#cc0000;font-size:.65rem;margin-left:2px;">↓</span>');
+      const thS = (col, lbl, align='left') =>
+        `<th style="padding:8px 10px;text-align:${align};cursor:pointer;user-select:none;white-space:nowrap;" onclick="sortAdherents('${col}')">${lbl}${arrow(col)}</th>`;
+
       document.getElementById('cotisTableHead').innerHTML = `<tr style="background:#f5f5f5;">
-        <th style="padding:8px 10px;text-align:left;white-space:nowrap;">Nom</th>
-        <th style="padding:8px 10px;text-align:left;">Prénom</th>
-        <th style="padding:8px 10px;text-align:center;">Col.</th>
-        <th style="padding:8px 10px;text-align:left;">Mode</th>
+        ${thS('nom',    'Nom')}
+        ${thS('prenom', 'Prénom')}
+        ${thS('college','Col.','center')}
+        ${thS('mode',   'Mode')}
         ${MOIS_NOMS.map(m=>`<th style="padding:8px 6px;text-align:center;font-size:.75rem;">${m}</th>`).join('')}
-        <th style="padding:8px 10px;text-align:right;">Reçu</th>
-        <th style="padding:8px 10px;text-align:right;">Dû</th>
-        <th style="padding:8px 10px;text-align:right;">Reste</th>
+        ${thS('recu',  'Reçu',  'right')}
+        ${thS('du',    'Dû',    'right')}
+        ${thS('reste', 'Reste', 'right')}
         <th style="padding:8px 10px;text-align:left;font-size:.75rem;">Commentaire</th>
+        <th style="padding:8px 10px;text-align:center;font-size:.75rem;">Actif</th>
       </tr>`;
 
-      // Corps
       document.getElementById('cotisTableBody').innerHTML = liste.map(a => {
-        const reste = a.resteAPayer||0;
-        const resteColor = reste>0?'#cc0000':reste<0?'#007bff':'#28a745';
-        const rowBg = !a.actif?'background:#f9f9f9;opacity:.6;':
-                      reste>0&&a.totalRecu===0?'background:#fff5f5;':
-                      reste>0?'background:#fffbf0;':'';
-        const moisCells = a.mois.map((v,i)=>{
-          const color = v===1?'#28a745':'#eee';
-          const icon  = v===1?'✓':'';
-          return `<td style="padding:4px 6px;text-align:center;"><span style="display:inline-block;width:22px;height:22px;border-radius:50%;background:${color};color:${v?'#fff':'#bbb'};font-size:.7rem;line-height:22px;">${icon}</span></td>`;
-        }).join('');
+        const reste = a.resteAPayer || 0;
+        const resteColor = reste > 0 ? '#cc0000' : reste < 0 ? '#007bff' : '#28a745';
+        const rowBg = !a.actif ? 'background:#f5f5f5;opacity:.65;' :
+                      reste > 0 && a.totalRecu === 0 ? 'background:#fff5f5;' :
+                      reste > 0 ? 'background:#fffbf0;' : '';
+        const moisCells = (a.mois || Array(12).fill(0)).map(v =>
+          `<td style="padding:4px 6px;text-align:center;"><span style="display:inline-block;width:22px;height:22px;border-radius:50%;background:${v===1?'#28a745':'#eee'};color:${v?'#fff':'#bbb'};font-size:.7rem;line-height:22px;">${v===1?'✓':''}</span></td>`
+        ).join('');
+        const toggleBtn = `<button onclick="toggleActifMembre('${a._key}',${a.actif})"
+          style="padding:3px 8px;border-radius:6px;border:1px solid ${a.actif?'#ced4da':'#c3e6cb'};cursor:pointer;font-size:.72rem;font-weight:600;background:${a.actif?'#f8f9fa':'#d4edda'};color:${a.actif?'#6c757d':'#155724'};"
+          title="${a.actif?'Rendre inactif':'Réactiver'}">
+          <i class="fas ${a.actif?'fa-user-slash':'fa-user-check'}"></i>${a.actif?' Actif':' Inactif'}
+        </button>`;
         return `<tr style="${rowBg}border-bottom:1px solid #f0f0f0;">
           <td style="padding:6px 10px;font-weight:700;">${a.nom||''}</td>
           <td style="padding:6px 10px;">${a.prenom||''}</td>
@@ -661,12 +880,13 @@
           <td style="padding:6px 10px;text-align:right;font-weight:700;color:#28a745;">${a.totalRecu>0?fmt(a.totalRecu):'—'}</td>
           <td style="padding:6px 10px;text-align:right;color:#666;">${a.totalDu>0?fmt(a.totalDu):'—'}</td>
           <td style="padding:6px 10px;text-align:right;font-weight:700;color:${resteColor};">${reste!==0?fmt(reste):'✓'}</td>
-          <td style="padding:6px 10px;font-size:.75rem;color:#888;max-width:140px;">${a.commentaire||''}</td>
+          <td style="padding:6px 10px;font-size:.75rem;color:#888;max-width:120px;">${a.commentaire||''}</td>
+          <td style="padding:6px 10px;text-align:center;">${toggleBtn}</td>
         </tr>`;
-      }).join('') || '<tr><td colspan="20" style="padding:24px;text-align:center;color:#aaa;">Aucun adhérent trouvé.</td></tr>';
+      }).join('') || `<tr><td colspan="21" style="padding:28px;text-align:center;color:#aaa;"><i class="fas fa-search" style="font-size:1.5rem;display:block;margin-bottom:8px;opacity:.3;"></i>Aucun adhérent trouvé pour ces critères.</td></tr>`;
     }
 
-    function filtrerAdherents(v) { chargerAdherents(); }
+    function filtrerAdherents() { chargerAdherents(); }
 
     function exporterAdherents() {
       const annee = parseInt(document.getElementById('cotisAnneeSelect').value)||2026;
@@ -782,10 +1002,256 @@
       };
     }
 
+    // ── Persistance du pointage (survit aux rechargements de page) ──
+    const POINTAGE_KEY = 'fo_pointage_ops';
+
+    function sauvegarderPointage() {
+      localStorage.setItem(POINTAGE_KEY, JSON.stringify(operations));
+    }
+
+    function restaurerPointage() {
+      try {
+        const saved = localStorage.getItem(POINTAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            operations = parsed;
+            return true;
+          }
+        }
+      } catch(e) {}
+      return false;
+    }
+
+    function effacerPointage() {
+      if (!confirm(`Effacer les ${operations.length} opération(s) en mémoire ?\nVous pourrez importer un nouveau relevé ensuite.`)) return;
+      operations = [];
+      localStorage.removeItem(POINTAGE_KEY);
+      document.getElementById('pointageSauvegardeBanner').style.display = 'none';
+      afficherOps();
+      toastTresor('Pointage effacé', '#6c757d');
+    }
+
+    function afficherBannierePointage() {
+      const banner = document.getElementById('pointageSauvegardeBanner');
+      if (!banner) return;
+      if (operations.length > 0) {
+        const nb = operations.length;
+        const nbValides = operations.filter(o => o.valide || o.statut === 'pointe_auto').length;
+        document.getElementById('pointageSauvegardeInfo').textContent =
+          `${nb} opération(s) — ${nbValides} pointée(s)`;
+        banner.style.display = 'flex';
+      } else {
+        banner.style.display = 'none';
+      }
+    }
+
+    // ── Détail des lignes du bilan ──
+    const BILAN_KEYWORDS = {
+      'Cotisations perçues':              { type:'credit', kw:[] },
+      'Remboursement frais tribunaux':    { type:'credit', kw:['TRIBUN','REMBOURSEMENT','REMBT'] },
+      'Tous les crédits':                 { type:'credit', kw:[] },
+      'Cotisations Fédération FO Métaux': { type:'debit',  kw:['FEDER','FO METAUX','METAUX','METALLU'] },
+      'Cotisations UD Somme':             { type:'debit',  kw:['UNION DEP','UD FO','UD80','SOMME','U.D.'] },
+      'Cartes syndicales':                { type:'debit',  kw:['CARTE','SYNDICAT'] },
+      'Timbres syndicaux':                { type:'debit',  kw:['TIMBRE'] },
+      'Frais de tribunaux':               { type:'debit',  kw:['TRIBUN','PRUD','CONSEIL'] },
+      'Frais de gestion':                 { type:'debit',  kw:['GESTION','HONORAIR','COMPTA'] },
+      'Frais propagande':                 { type:'debit',  kw:['PROPAGANDE','COMMUNIC','IMPRIM','TRACT'] },
+      'Frais repas AG':                   { type:'debit',  kw:['REPAS','RESTAUR','TRAITEUR','AG'] },
+      'Frais gestion administrative':     { type:'debit',  kw:['ADMINISTRATIF','BUREAU','FOURNITUR'] },
+      'Frais de fonctionnement':          { type:'debit',  kw:['FONCTIONNEMENT','EDF','LOYER','TELECOM','ABONNEMENT'] },
+      'Tous les débits':                  { type:'debit',  kw:[] },
+    };
+
+    function ouvrirDetailBilan(label, montantStatique) {
+      const modal = document.getElementById('modalBilanDetail');
+      document.getElementById('bilanDetailTitle').textContent = label;
+      document.getElementById('bilanDetailMontant').textContent = fmt(montantStatique);
+      const container = document.getElementById('bilanDetailOps');
+
+      if (!operations.length) {
+        container.innerHTML = `<div style="text-align:center;padding:40px;color:#aaa;">
+          <i class="fas fa-file-import" style="font-size:2.5rem;display:block;margin-bottom:12px;opacity:.3;"></i>
+          <p style="font-size:.9rem;">Importez un relevé bancaire pour voir le détail des opérations.</p>
+          <button class="btn btn-sm btn-outline-red" style="margin-top:12px;" onclick="fermerDetailBilan();showSection('import');setActiveNav('import')">
+            <i class="fas fa-file-import"></i> Importer un relevé
+          </button>
+        </div>`;
+      } else {
+        const meta = BILAN_KEYWORDS[label] || { type:'credit', kw:[] };
+        let ops = operations.filter(o => meta.type === 'credit' ? o.credit > 0 : o.debit > 0);
+        if (meta.kw.length > 0) {
+          ops = ops.filter(o => meta.kw.some(k => (o.libelle||'').toUpperCase().includes(k)));
+        }
+        if (!ops.length) {
+          container.innerHTML = `<div style="text-align:center;padding:28px;color:#aaa;">
+            <i class="fas fa-search" style="font-size:2rem;display:block;margin-bottom:10px;opacity:.3;"></i>
+            <p style="font-size:.88rem;">Aucune opération correspondante trouvée dans le relevé importé.<br>
+            <small>Ces dépenses peuvent provenir d'un autre relevé ou d'une période non importée.</small></p>
+          </div>`;
+        } else {
+          const totalOps = ops.reduce((s,o) => s + (o.credit||0) + (o.debit||0), 0);
+          container.innerHTML = `
+            <div style="margin-bottom:12px;padding:10px 14px;background:#f8f9fa;border-radius:8px;display:flex;justify-content:space-between;align-items:center;font-size:.85rem;flex-wrap:wrap;gap:8px;">
+              <span><strong>${ops.length}</strong> opération(s) dans le relevé importé</span>
+              <span>Total opérations : <strong style="color:${meta.type==='credit'?'#28a745':'#cc0000'};">${fmt(totalOps)}</strong></span>
+            </div>
+            <div class="table-container" style="max-height:380px;overflow-y:auto;">
+              <table style="width:100%;border-collapse:collapse;font-size:.82rem;">
+                <thead style="position:sticky;top:0;background:#f5f5f5;z-index:1;">
+                  <tr>
+                    <th style="padding:7px 10px;text-align:left;border-bottom:2px solid #ddd;">Date</th>
+                    <th style="padding:7px 10px;text-align:left;border-bottom:2px solid #ddd;">Libellé</th>
+                    <th style="padding:7px 10px;text-align:right;border-bottom:2px solid #ddd;">Crédit</th>
+                    <th style="padding:7px 10px;text-align:right;border-bottom:2px solid #ddd;">Débit</th>
+                    <th style="padding:7px 10px;text-align:left;border-bottom:2px solid #ddd;">Adhérent</th>
+                    <th style="padding:7px 10px;text-align:left;border-bottom:2px solid #ddd;">Statut</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${ops.map(o => {
+                    const LABELS = { pointe_auto:'✅ Auto', valide_manuellement:'✅ Validé', a_valider:'🔵 À valider', non_identifie:'⚠️ Non identifié' };
+                    return `<tr style="border-bottom:1px solid #f5f5f5;">
+                      <td style="padding:6px 10px;white-space:nowrap;color:#777;font-size:.78rem;">${o.date||'—'}</td>
+                      <td style="padding:6px 10px;font-size:.77rem;max-width:200px;word-break:break-word;">${o.libelle||''}</td>
+                      <td style="padding:6px 10px;text-align:right;font-weight:700;color:#28a745;">${o.credit>0?fmt(o.credit):'—'}</td>
+                      <td style="padding:6px 10px;text-align:right;font-weight:700;color:#cc0000;">${o.debit>0?fmt(o.debit):'—'}</td>
+                      <td style="padding:6px 10px;font-size:.8rem;">${o.adherent||'<span style="color:#aaa;">—</span>'}</td>
+                      <td style="padding:6px 10px;font-size:.75rem;">${LABELS[o.statut]||o.statut||'—'}</td>
+                    </tr>`;
+                  }).join('')}
+                </tbody>
+              </table>
+            </div>`;
+        }
+      }
+      modal.style.display = 'flex';
+    }
+
+    function fermerDetailBilan() {
+      document.getElementById('modalBilanDetail').style.display = 'none';
+    }
+
+    // ── Répartition chèque (plusieurs adhérents) ──
+    let _repartirIdx = null;
+
+    function ouvrirRepartir(idx) {
+      _repartirIdx = idx;
+      const op = operations[idx];
+      if (!op) return;
+      document.getElementById('repartirLibelle').textContent = op.libelle || '';
+      const total = parseFloat(op.credit) || 0;
+      document.getElementById('repartirTotal').textContent = total.toFixed(2) + ' €';
+      document.getElementById('repartirLignes').innerHTML = '';
+      document.getElementById('repartirRestant').textContent = total.toFixed(2) + ' €';
+      document.getElementById('repartirRestant').style.color = '#f0ad4e';
+      addRepartirLigne();
+      document.getElementById('modalRepartir').style.display = 'flex';
+    }
+
+    function addRepartirLigne() {
+      const div = document.createElement('div');
+      div.className = 'repartir-row';
+      div.style.cssText = 'display:grid;grid-template-columns:1fr 120px 30px;gap:8px;margin-bottom:8px;align-items:center;';
+      div.innerHTML = `
+        <select style="padding:8px;border:1px solid #ddd;border-radius:6px;font-size:.85rem;" onchange="updateRepartirRestant()">
+          <option value="">— Adhérent —</option>
+          ${ADHERENTS_LISTE.map(a => `<option value="${a}">${a}</option>`).join('')}
+        </select>
+        <input type="number" placeholder="Montant €" step="0.01" min="0"
+               style="padding:8px;border:1px solid #ddd;border-radius:6px;font-size:.85rem;"
+               oninput="updateRepartirRestant()" />
+        <button onclick="this.closest('.repartir-row').remove();updateRepartirRestant();"
+                style="background:none;border:none;color:#cc0000;font-size:1rem;cursor:pointer;" title="Supprimer">✕</button>`;
+      document.getElementById('repartirLignes').appendChild(div);
+    }
+
+    function updateRepartirRestant() {
+      const total = parseFloat(operations[_repartirIdx]?.credit) || 0;
+      let used = 0;
+      document.querySelectorAll('#repartirLignes .repartir-row input[type=number]').forEach(inp => {
+        used += parseFloat(inp.value || 0) || 0;
+      });
+      const rest = Math.round((total - used) * 100) / 100;
+      const el = document.getElementById('repartirRestant');
+      el.textContent = rest.toFixed(2) + ' €';
+      el.style.color = rest === 0 ? '#28a745' : rest < 0 ? '#cc0000' : '#f0ad4e';
+    }
+
+    function saveRepartirTreso() {
+      if (_repartirIdx === null) return;
+      const op = operations[_repartirIdx];
+      const lignes = [];
+      let used = 0;
+      document.querySelectorAll('#repartirLignes .repartir-row').forEach(row => {
+        const adherent = row.querySelector('select').value;
+        const montant  = parseFloat(row.querySelector('input').value) || 0;
+        if (adherent && montant > 0) { lignes.push({ adherent, montant }); used += montant; }
+      });
+      if (!lignes.length) return alert('Ajoutez au moins une ligne avec un adhérent et un montant.');
+      const total = parseFloat(op.credit) || 0;
+      if (Math.abs(used - total) > 0.02) {
+        return alert(`Total réparti (${used.toFixed(2)} €) ≠ montant de l'opération (${total.toFixed(2)} €).\nAjustez les montants.`);
+      }
+      // Stocker en localStorage (partagé avec admin)
+      const reps = JSON.parse(localStorage.getItem('fo_repartitions') || '[]');
+      reps.push({ date: op.date, libelle: op.libelle, total, lignes, ts: new Date().toISOString(), auteur: user?.name || '—' });
+      localStorage.setItem('fo_repartitions', JSON.stringify(reps));
+      // Marquer l'opération
+      op.adherent = lignes.map(l => l.adherent).join(', ');
+      op.statut   = 'valide_manuellement';
+      op.valide   = true;
+      op.reparti  = true;
+      sauvegarderPointage();
+      // Audit
+      if (typeof AuditLog !== 'undefined') {
+        AuditLog.add({
+          auteur: user?.name || '—',
+          role: user?.role || 'tresorier',
+          action: 'repartition',
+          adherent: lignes.map(l => l.adherent).join(', '),
+          montant: total,
+          details: `Répartition sur ${lignes.length} adhérent(s) : ${lignes.map(l=>l.adherent+' '+l.montant.toFixed(2)+'€').join(' | ')} · Op. du ${op.date}`
+        });
+      }
+      fermerRepartir();
+      mettreAJourStats();
+      renderOps(filterActif);
+      toastTresor('Répartition enregistrée ✓', '#28a745');
+    }
+
+    function fermerRepartir() {
+      document.getElementById('modalRepartir').style.display = 'none';
+      _repartirIdx = null;
+    }
+
+    // ── Journal ──
+    function loadJournal() {
+      if (typeof AuditLog !== 'undefined') {
+        const filter = (document.getElementById('journalSearch')?.value || '').toLowerCase().trim();
+        AuditLog.render('journalContainer', { max: 500, filterText: filter });
+      }
+    }
+
+    // ── Toast ──
+    function toastTresor(msg, color) {
+      const t = document.getElementById('toastTresor');
+      if (!t) return;
+      t.textContent = msg;
+      t.style.background = color || '#28a745';
+      t.style.opacity = '1';
+      setTimeout(() => { t.style.opacity = '0'; }, 3000);
+    }
+
     // Init : pré-charger les données au démarrage
     if (typeof TREASURY_DATA !== 'undefined') {
       chargerBilan();
       chargerAdherents();
+    }
+    // Restaurer le pointage sauvegardé (persiste entre rechargements)
+    if (restaurerPointage()) {
+      afficherBannierePointage();
     }
     if (typeof loadFlashInfo === 'function') {
       loadFlashInfo('tresoFlashInfo', { max: 4, showFilter: false, compact: true, showTicker: false });
