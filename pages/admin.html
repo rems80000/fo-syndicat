@@ -36,6 +36,7 @@
         <div class="sidebar-nav-item" onclick="showSection('cartes')"><i class="fas fa-id-card"></i> Cartes syndicales</div>
         <div class="sidebar-nav-item" onclick="showSection('planning')"><i class="fas fa-calendar-alt"></i> Planning</div>
         <div class="sidebar-nav-item" onclick="showSection('diffusion')"><i class="fas fa-envelope-open-text"></i> Liste de diffusion</div>
+        <div class="sidebar-nav-item" onclick="showSection('ag')"><i class="fas fa-landmark"></i> AG & Documents</div>
         <div class="sidebar-nav-item" onclick="showSection('journal')"><i class="fas fa-history"></i> Journal</div>
         <div class="sidebar-nav-item" onclick="showSection('utilisateurs')"><i class="fas fa-user-cog"></i> Utilisateurs</div>
       </nav>
@@ -467,6 +468,38 @@
         </div>
       </div>
 
+      <!-- ═══ AG & DOCUMENTS ═══ -->
+      <div id="section-ag" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+          <div>
+            <h1 class="dashboard-title" style="margin-bottom:4px;">AG & Documents officiels</h1>
+            <p class="dashboard-subtitle" style="margin:0;">Historique des AG, bulletins d'adhésion et RIB du syndicat</p>
+          </div>
+        </div>
+
+        <!-- Sous-onglets -->
+        <div style="display:flex;gap:0;flex-wrap:wrap;border-bottom:2px solid #eee;margin-bottom:20px;">
+          <button class="ag-sub-tab" data-tab="historique" onclick="showAgTabAdmin('historique')" style="padding:10px 22px;border:none;background:none;cursor:pointer;font-size:.88rem;font-weight:700;color:#cc0000;border-bottom:3px solid #cc0000;margin-bottom:-2px;transition:all .15s;"><i class="fas fa-archive"></i> Historique AG</button>
+          <button class="ag-sub-tab" data-tab="bulletins" onclick="showAgTabAdmin('bulletins')" style="padding:10px 22px;border:none;background:none;cursor:pointer;font-size:.88rem;font-weight:600;color:#888;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .15s;"><i class="fas fa-file-signature"></i> Bulletins d'adhésion</button>
+          <button class="ag-sub-tab" data-tab="rib" onclick="showAgTabAdmin('rib')" style="padding:10px 22px;border:none;background:none;cursor:pointer;font-size:.88rem;font-weight:600;color:#888;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .15s;"><i class="fas fa-university"></i> RIB</button>
+        </div>
+
+        <!-- Tab Historique -->
+        <div id="agtab-admin-historique" class="agtab-admin">
+          <div id="agAdminHistoriqueList"></div>
+        </div>
+
+        <!-- Tab Bulletins -->
+        <div id="agtab-admin-bulletins" class="agtab-admin" style="display:none;">
+          <div id="agAdminBulletinsContent"></div>
+        </div>
+
+        <!-- Tab RIB -->
+        <div id="agtab-admin-rib" class="agtab-admin" style="display:none;">
+          <div id="agAdminRIBContent"></div>
+        </div>
+      </div>
+
       <div id="section-utilisateurs" style="display:none">
         <h1 class="dashboard-title">Gestion des accès</h1>
         <p class="dashboard-subtitle">Gérez les rôles et les droits des utilisateurs</p>
@@ -697,6 +730,7 @@
       if (id === 'planning')    loadPlanningAdminSection();
       if (id === 'journal')     loadJournalAdmin();
       if (id === 'diffusion')   loadListeDiffusion();
+      if (id === 'ag')          chargerAGSectionAdmin();
     }
 
     function loadJournalAdmin() {
@@ -1982,6 +2016,205 @@
     }
     if (typeof loadPlanningWidget === 'function') {
       loadPlanningWidget('dashPlanningWidget', 5);
+    }
+
+    // ════════════════════════════════════════════
+    // ═══ AG & DOCUMENTS (admin / secrétaire) ═══
+    // ════════════════════════════════════════════
+
+    function fmtAdmin(v) {
+      return (v||0).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
+    }
+
+    function showAdminToast(msg, color) {
+      let t = document.getElementById('adminToastAG');
+      if (!t) {
+        t = document.createElement('div');
+        t.id = 'adminToastAG';
+        t.style.cssText = 'position:fixed;bottom:28px;right:28px;padding:12px 22px;border-radius:10px;font-size:.9rem;font-weight:600;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.18);opacity:0;transition:opacity .3s;pointer-events:none;color:#fff;';
+        document.body.appendChild(t);
+      }
+      t.textContent = msg;
+      t.style.background = color || '#28a745';
+      t.style.opacity = '1';
+      setTimeout(() => { t.style.opacity = '0'; }, 2800);
+    }
+
+    function chargerAGSectionAdmin() {
+      showAgTabAdmin('historique');
+    }
+
+    function showAgTabAdmin(tab) {
+      document.querySelectorAll('.agtab-admin').forEach(t => t.style.display = 'none');
+      const el = document.getElementById('agtab-admin-' + tab);
+      if (el) el.style.display = 'block';
+      document.querySelectorAll('.ag-sub-tab').forEach(b => {
+        const active = b.dataset.tab === tab;
+        b.style.color        = active ? '#cc0000' : '#888';
+        b.style.borderBottom = active ? '3px solid #cc0000' : '3px solid transparent';
+        b.style.fontWeight   = active ? '700' : '600';
+      });
+      if (tab === 'historique') renderAgHistoriqueAdmin();
+      else if (tab === 'bulletins') renderAgBulletinsAdmin();
+      else if (tab === 'rib') renderAgRIBAdmin();
+    }
+
+    function renderAgHistoriqueAdmin() {
+      const agData = (typeof TREASURY_DATA !== 'undefined') && TREASURY_DATA.ag;
+      if (!agData || !agData.historique || !agData.historique.length) {
+        document.getElementById('agAdminHistoriqueList').innerHTML =
+          '<p style="color:#aaa;text-align:center;padding:32px;font-style:italic;">Aucun historique disponible.</p>';
+        return;
+      }
+      const sorted = [...agData.historique].sort((a,b) => b.annee - a.annee);
+      document.getElementById('agAdminHistoriqueList').innerHTML = sorted.map(ag => {
+        const dateF = ag.date
+          ? new Date(ag.date+'T00:00:00').toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'})
+          : 'Date non renseignée';
+        const docsHtml = ag.documents && ag.documents.length
+          ? ag.documents.map(d => {
+              const ico = d.type==='pv'?'fa-certificate':d.type==='bilan'?'fa-table':d.type==='rapport_activite'?'fa-file-alt':'fa-file-pdf';
+              return `<a href="../${d.fichier}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-red" style="font-size:.77rem;margin:3px 3px 3px 0;text-decoration:none;">
+                <i class="fas ${ico}"></i> ${d.label}</a>`;
+            }).join('')
+          : '<span style="color:#aaa;font-size:.82rem;font-style:italic;">Aucun document</span>';
+        const bur = ag.bureau ? `
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin-top:12px;">
+            ${[['Secrétaire',ag.bureau.secretaire],['Secrét. adjoint(e)',ag.bureau.secretaireAdjoint],
+               ['Trésorier',ag.bureau.tresorier],['Trés. adjoint',ag.bureau.tresorierAdjoint]]
+              .filter(([,n])=>n).map(([r,n])=>`
+                <div style="background:#f8f9fa;border-radius:8px;padding:8px 12px;">
+                  <div style="font-size:.72rem;color:#888;text-transform:uppercase;letter-spacing:.5px;">${r}</div>
+                  <div style="font-weight:600;font-size:.87rem;margin-top:2px;">${n}</div>
+                </div>`).join('')}
+          </div>` : '';
+        const bil = ag.bilan ? `
+          <div style="margin-top:12px;background:#f8f9fa;border-radius:8px;padding:12px 16px;border-left:3px solid #cc0000;">
+            <div style="font-weight:700;font-size:.8rem;color:#cc0000;margin-bottom:8px;"><i class="fas fa-balance-scale"></i> Résumé financier</div>
+            <div style="display:flex;gap:20px;flex-wrap:wrap;font-size:.84rem;color:#555;">
+              <div>Cotisations : <strong style="color:#28a745;">${fmtAdmin(ag.bilan.cotisationsRecues)}</strong></div>
+              <div>Revers. Féd+UD : <strong style="color:#cc0000;">${fmtAdmin((ag.bilan.cotisationsFed||0)+(ag.bilan.cotisationsUD||0))}</strong></div>
+              <div>Frais gestion : <strong>${fmtAdmin(ag.bilan.fraisGestion||0)}</strong></div>
+              <div>Solde clôture : <strong style="color:${(ag.bilan.soldeFin||0)>=0?'#28a745':'#cc0000'};">${fmtAdmin(ag.bilan.soldeFin)}</strong></div>
+            </div>
+          </div>` : '';
+        return `
+          <div class="panel" style="margin-bottom:16px;border-left:4px solid #cc0000;">
+            <div>
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                <span style="background:#cc0000;color:#fff;padding:5px 16px;border-radius:20px;font-weight:700;font-size:.95rem;">AG ${ag.annee}</span>
+                <span style="font-size:.88rem;color:#666;">Exercice <strong>${ag.exercice}</strong></span>
+                <span style="font-size:.83rem;color:#888;"><i class="fas fa-calendar-alt"></i> ${dateF}</span>
+              </div>
+              ${ag.lieu?`<div style="font-size:.8rem;color:#888;margin-top:5px;"><i class="fas fa-map-marker-alt"></i> ${ag.lieu}</div>`:''}
+            </div>
+            ${bur}${bil}
+            <div style="margin-top:13px;border-top:1px solid #eee;padding-top:11px;">
+              <div style="font-size:.78rem;font-weight:700;color:#888;margin-bottom:6px;"><i class="fas fa-paperclip"></i> Documents officiels :</div>
+              ${docsHtml}
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function renderAgBulletinsAdmin() {
+      const bulletins = (typeof TREASURY_DATA !== 'undefined') ? (TREASURY_DATA.bulletins || []) : [];
+      if (!bulletins.length) {
+        document.getElementById('agAdminBulletinsContent').innerHTML =
+          '<p style="color:#aaa;text-align:center;padding:32px;">Aucun bulletin disponible.</p>';
+        return;
+      }
+      // Croiser avec membres connus pour identifier ceux sans bulletin
+      const adherentsConnus = (typeof TREASURY_DATA !== 'undefined' && TREASURY_DATA.adherents)
+        ? (TREASURY_DATA.adherents[2026] || []).filter(a => a.nom && !a.nom.toLowerCase().includes('conf'))
+        : [];
+      const nomsBulletins = new Set(bulletins.map(b => b.nom.toUpperCase()));
+      const sansBulletin = adherentsConnus.filter(a => !nomsBulletins.has(a.nom.toUpperCase()));
+
+      const rows = [...bulletins].sort((a,b)=>a.nom.localeCompare(b.nom)).map(b=>`
+        <tr data-nom="${b.nom.toUpperCase()}" data-prenom="${(b.prenom||'').toUpperCase()}">
+          <td><strong>${b.nom}</strong></td>
+          <td>${b.prenom||'—'}</td>
+          <td><span style="background:#e8f4f8;color:#005580;padding:2px 8px;border-radius:12px;font-size:.78rem;font-weight:700;">${b.annee}</span></td>
+          <td><span class="badge badge-green" style="font-size:.72rem;">✓ Reçu</span></td>
+          <td><a href="../${b.fichier}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-red" style="font-size:.77rem;">
+            <i class="fas fa-${b.fichier.endsWith('.pdf')?'file-pdf':'image'}"></i> Voir</a></td>
+        </tr>`).join('');
+
+      const sansBulletinHtml = sansBulletin.length ? `
+        <div class="panel" style="margin-top:20px;border-left:4px solid #f0ad4e;">
+          <div class="panel-title" style="color:#856404;"><i class="fas fa-exclamation-triangle"></i> Membres sans bulletin (${sansBulletin.length})</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;padding:8px 0;">
+            ${sansBulletin.map(a=>`<span style="background:#fff3cd;color:#856404;padding:4px 10px;border-radius:12px;font-size:.82rem;font-weight:600;">${a.nom} ${a.prenom||''}</span>`).join('')}
+          </div>
+        </div>` : `<div class="panel" style="margin-top:16px;text-align:center;padding:16px;"><span style="color:#28a745;font-weight:700;"><i class="fas fa-check-circle"></i> Tous les membres ont un bulletin archivé</span></div>`;
+
+      document.getElementById('agAdminBulletinsContent').innerHTML = `
+        <div class="panel">
+          <div class="panel-title" style="justify-content:space-between;">
+            <span><i class="fas fa-file-signature"></i> Bulletins archivés (${bulletins.length})</span>
+            <input type="text" id="adminBulletinSearch" placeholder="Rechercher…" oninput="filterAdminBulletins(this.value)"
+              style="padding:6px 10px;border:1px solid #ddd;border-radius:8px;font-size:.82rem;width:160px;" />
+          </div>
+          <div class="table-container">
+            <table>
+              <thead><tr><th>Nom</th><th>Prénom</th><th>Année</th><th>Statut</th><th>Document</th></tr></thead>
+              <tbody id="adminBulletinsBody">${rows}</tbody>
+            </table>
+          </div>
+        </div>
+        ${sansBulletinHtml}`;
+    }
+
+    function filterAdminBulletins(q) {
+      const qu = q.toUpperCase();
+      document.querySelectorAll('#adminBulletinsBody tr').forEach(row => {
+        const nom    = row.dataset.nom    || '';
+        const prenom = row.dataset.prenom || '';
+        row.style.display = (!qu || nom.includes(qu) || prenom.includes(qu)) ? '' : 'none';
+      });
+    }
+
+    function renderAgRIBAdmin() {
+      const rib = (typeof TREASURY_DATA !== 'undefined') ? TREASURY_DATA.rib : null;
+      if (!rib) {
+        document.getElementById('agAdminRIBContent').innerHTML =
+          '<p style="color:#aaa;text-align:center;padding:32px;">Aucune donnée RIB disponible.</p>';
+        return;
+      }
+      document.getElementById('agAdminRIBContent').innerHTML = `
+        <div class="panel">
+          <div class="panel-title"><i class="fas fa-university"></i> Relevé d'Identité Bancaire</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:14px;font-size:.88rem;flex-wrap:wrap;">
+            <div>
+              <div style="font-size:.74rem;color:#888;margin-bottom:3px;text-transform:uppercase;letter-spacing:.5px;">Titulaire</div>
+              <div style="font-weight:700;">${rib.titulaire}</div>
+              <div style="color:#666;font-size:.83rem;margin-top:2px;">${rib.adresse}</div>
+            </div>
+            <div>
+              <div style="font-size:.74rem;color:#888;margin-bottom:3px;text-transform:uppercase;letter-spacing:.5px;">Établissement</div>
+              <div style="font-weight:600;">${rib.banque}</div>
+              <div style="color:#666;font-size:.83rem;margin-top:2px;">Code banque : <strong>${rib.codeBanque}</strong> | Guichet : <strong>${rib.codeGuichet}</strong> | Clé : <strong>${rib.cleRIB}</strong></div>
+            </div>
+          </div>
+          <div style="background:#f0f4f8;border-radius:10px;padding:14px 18px;display:flex;gap:20px;align-items:center;justify-content:space-between;flex-wrap:wrap;">
+            <div>
+              <div style="font-size:.74rem;color:#888;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">IBAN</div>
+              <div style="font-family:monospace;font-size:1.12rem;font-weight:700;letter-spacing:2px;">${rib.iban}</div>
+              <div style="font-size:.82rem;color:#666;margin-top:4px;">BIC / SWIFT : <strong>${rib.bic}</strong></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px;min-width:130px;">
+              <button class="btn btn-sm btn-outline-red"
+                onclick="navigator.clipboard.writeText('${rib.iban.replace(/\s/g,'')}').then(()=>showAdminToast('IBAN copié !','#28a745')).catch(()=>showAdminToast('Erreur','#cc0000'))">
+                <i class="fas fa-copy"></i> Copier IBAN</button>
+              <button class="btn btn-sm" style="background:#6c757d;color:#fff;"
+                onclick="navigator.clipboard.writeText('${rib.bic}').then(()=>showAdminToast('BIC copié !','#28a745')).catch(()=>showAdminToast('Erreur','#cc0000'))">
+                <i class="fas fa-copy"></i> Copier BIC</button>
+              <a href="../${rib.fichier}" target="_blank" rel="noopener" class="btn btn-sm" style="background:#cc0000;color:#fff;text-decoration:none;text-align:center;">
+                <i class="fas fa-file-pdf"></i> RIB PDF</a>
+            </div>
+          </div>
+        </div>`;
     }
   </script>
 </body>

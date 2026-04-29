@@ -4306,5 +4306,118 @@ const TREASURY_DATA = {
       "totalDebits": 7960.22,
       "soldeFin": 3603.56
     }
-  }
+  },
+  "ag": {
+    "historique": [
+      {
+        "annee": 2022,
+        "exercice": 2021,
+        "date": "2022-11-03",
+        "lieu": "26 rue Frédéric Petit, 80000 AMIENS (locaux UD FO Somme)",
+        "bureau": {
+          "secretaire": "Gino CROISY",
+          "secretaireAdjoint": "Gwendoline ROUSSIN",
+          "tresorier": "Rémy PORTAUX",
+          "tresorierAdjoint": "Anthony BEAUGEOIS"
+        },
+        "documents": [
+          { "label": "PV Assemblée Générale", "fichier": "assets/docs/ag/AG-2022/PV-AG-Novembre-2022.pdf", "type": "pv" }
+        ]
+      },
+      {
+        "annee": 2023,
+        "exercice": 2022,
+        "date": "2023-11-15",
+        "lieu": "26 rue Frédéric Petit, 80000 AMIENS (locaux UD FO Somme)",
+        "bureau": {
+          "secretaire": "Gino CROISY",
+          "secretaireAdjoint": "Gwendoline ROUSSIN",
+          "tresorier": "Rémy PORTAUX",
+          "tresorierAdjoint": "Anthony BEAUGEOIS"
+        },
+        "documents": [
+          { "label": "PV Assemblée Générale", "fichier": "assets/docs/ag/AG-2023/PV-AG-Novembre-2023.pdf", "type": "pv" },
+          { "label": "Messagerie – Retour AG", "fichier": "assets/docs/ag/AG-2023/Messagerie-Retour-AG-2023.pdf", "type": "messagerie" }
+        ]
+      },
+      {
+        "annee": 2024,
+        "exercice": 2023,
+        "date": "2024-09-06",
+        "lieu": "Valeo Embrayages Amiens",
+        "bureau": {
+          "secretaire": "Gino CROISY",
+          "secretaireAdjoint": "Gwendoline ROUSSIN",
+          "tresorier": "Rémy PORTAUX",
+          "tresorierAdjoint": "Anthony BEAUGEOIS"
+        },
+        "bilan": {
+          "soldeDebut": 1496.02,
+          "cotisationsRecues": 8168.56,
+          "aideFederation": 1000.00,
+          "remboursementsTribunaux": 0,
+          "totalCredits": 9168.56,
+          "cotisationsFed": 4014.30,
+          "cartes": 451.20,
+          "timbres": 3563.10,
+          "cotisationsUD": 2730.60,
+          "fraisTribunaux": 500.00,
+          "fraisGestion": 2176.32,
+          "fraisRestauration": 171.00,
+          "fraisCampagneElectorale": 988.13,
+          "fraisRepasElections": 829.02,
+          "fraisRepasAG": 188.17,
+          "fraisPropagande": 0,
+          "fraisGestionAdmin": 0,
+          "fraisFonctionnement": 0,
+          "totalDebits": 9421.22,
+          "soldeFin": 1243.36
+        },
+        "documents": [
+          { "label": "Rapport d'activités 2023", "fichier": "assets/docs/ag/AG-2024/Rapport-activite-2023.pdf", "type": "rapport_activite" },
+          { "label": "Rapport financier 2023",   "fichier": "assets/docs/ag/AG-2024/Rapport-financier-2023.pdf", "type": "rapport_financier" },
+          { "label": "Bilan financier 2023",      "fichier": "assets/docs/ag/AG-2024/Bilan-financier-2023.pdf", "type": "bilan" }
+        ]
+      }
+    ]
+  },
+  "rib": {
+    "banque": "Crédit Agricole Brie Picardie – Villers Bocage",
+    "titulaire": "SYNDICAT FO VALEO EMBRAYAGES AMIENS",
+    "adresse": "81 AVENUE ROGER DUMOULIN, 80080 AMIENS",
+    "codeBanque": "18706",
+    "codeGuichet": "00000",
+    "numeroCompte": "97535488898",
+    "cleRIB": "44",
+    "iban": "FR76 1870 6000 0097 5354 8889 844",
+    "bic": "AGRIFRPP887",
+    "fichier": "assets/docs/RIB-FO-Metaux-Valeo-Amiens.pdf"
+  },
+  "bulletins": [
+    { "nom": "BEGUIN",        "prenom": "ALLAN",    "annee": 2022, "fichier": "assets/docs/bulletins/BEGUIN-ALLAN-2022.pdf" },
+    { "nom": "BOBER",         "prenom": "DEBORAH",  "annee": 2024, "fichier": "assets/docs/bulletins/BOBER-DEBORAH-2024.pdf" },
+    { "nom": "BONARD",        "prenom": "PASCAL",   "annee": 2024, "fichier": "assets/docs/bulletins/BONARD-PASCAL-2024.pdf" },
+    { "nom": "CARPENTIER",    "prenom": "T.",        "annee": 2023, "fichier": "assets/docs/bulletins/CARPENTIER-T-2023.pdf" },
+    { "nom": "CAUMARTIN",     "prenom": "L.",        "annee": 2022, "fichier": "assets/docs/bulletins/CAUMARTIN-L-2022.pdf" },
+    { "nom": "CONFIDENTIEL 3","prenom": "",          "annee": 2024, "fichier": "assets/docs/bulletins/CONFIDENTIEL-3-2024.pdf" },
+    { "nom": "CROGNIER",      "prenom": "D.",        "annee": 2022, "fichier": "assets/docs/bulletins/CROGNIER-D-2022.pdf" },
+    { "nom": "DEENIN",        "prenom": "L.",        "annee": 2023, "fichier": "assets/docs/bulletins/DEENIN-L-2023.jpg" },
+    { "nom": "DEHESDIN",      "prenom": "A.",        "annee": 2023, "fichier": "assets/docs/bulletins/DEHESDIN-A-2023.jpg" },
+    { "nom": "DOS SANTOS",    "prenom": "C.",        "annee": 2023, "fichier": "assets/docs/bulletins/DOS-SANTOS-C-2023.jpg" },
+    { "nom": "DUMONT",        "prenom": "B.",        "annee": 2023, "fichier": "assets/docs/bulletins/DUMONT-B-2023.jpg" },
+    { "nom": "DUPAYS",        "prenom": "C.",        "annee": 2023, "fichier": "assets/docs/bulletins/DUPAYS-C-2023.pdf" },
+    { "nom": "FERREIRA",      "prenom": "PHILIPPE",  "annee": 2023, "fichier": "assets/docs/bulletins/FERREIRA-PHILIPPE-2023.jpg" },
+    { "nom": "FIOLET",        "prenom": "S.",        "annee": 2023, "fichier": "assets/docs/bulletins/FIOLET-S-2023.jpg" },
+    { "nom": "FONTAINE",      "prenom": "JB",        "annee": 2024, "fichier": "assets/docs/bulletins/FONTAINE-JB-2024.pdf" },
+    { "nom": "LEFEVRE",       "prenom": "R.",        "annee": 2023, "fichier": "assets/docs/bulletins/LEFEVRE-R-2023.pdf" },
+    { "nom": "LEMOINE",       "prenom": "M.",        "annee": 2023, "fichier": "assets/docs/bulletins/LEMOINE-M-2023.jpg" },
+    { "nom": "LOURDEL",       "prenom": "BENOIT",    "annee": 2024, "fichier": "assets/docs/bulletins/LOURDEL-BENOIT-2024.pdf" },
+    { "nom": "PRINGARBE",     "prenom": "S.",        "annee": 2023, "fichier": "assets/docs/bulletins/PRINGARBE-S-2023.jpg" },
+    { "nom": "ROBILLARD",     "prenom": "LINDSAY",   "annee": 2023, "fichier": "assets/docs/bulletins/ROBILLARD-LINDSAY-2023.pdf" },
+    { "nom": "ROUILLARD",     "prenom": "C.",        "annee": 2023, "fichier": "assets/docs/bulletins/ROUILLARD-C-2023.pdf" },
+    { "nom": "SAUVE",         "prenom": "JEREMIE",   "annee": 2025, "fichier": "assets/docs/bulletins/SAUVE-JEREMIE-2025.pdf" },
+    { "nom": "TANCHON",       "prenom": "D.",        "annee": 2023, "fichier": "assets/docs/bulletins/TANCHON-D-2023.png" },
+    { "nom": "TEIXEIRA",      "prenom": "O.",        "annee": 2023, "fichier": "assets/docs/bulletins/TEIXEIRA-O-2023.jpg" },
+    { "nom": "THIERY",        "prenom": "S.",        "annee": 2023, "fichier": "assets/docs/bulletins/THIERY-S-2023.jpg" }
+  ]
 };
