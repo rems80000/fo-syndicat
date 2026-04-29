@@ -130,17 +130,22 @@
         <h1 class="dashboard-title">Gestion des adhérents</h1>
         <p class="dashboard-subtitle">Liste complète — données issues de Google Sheets</p>
         <div class="panel">
-          <div class="panel-title" style="justify-content:space-between;">
-            <span><i class="fas fa-users"></i> Adhérents (87)</span>
-            <div style="display:flex;gap:8px;">
-              <input type="text" placeholder="Rechercher..." style="padding:6px 12px;border:1px solid #ddd;border-radius:6px;font-size:.85rem;" oninput="filterTable(this.value)" />
-              <button class="btn btn-sm btn-red" onclick="exportCSV()"><i class="fas fa-download"></i> Export CSV</button>
-              <button class="btn btn-sm btn-outline-red" onclick="syncSheets()"><i class="fab fa-google"></i> Sync Sheets</button>
+          <div class="panel-title" style="justify-content:space-between;flex-wrap:wrap;gap:8px;">
+            <span id="adhTitleCount"><i class="fas fa-users"></i> Adhérents</span>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+              <div style="display:flex;gap:5px;">
+                <button class="btn btn-sm adh-actif-btn active" onclick="filtrerAdhActif('tous',this)" style="font-size:.75rem;">Tous</button>
+                <button class="btn btn-sm adh-actif-btn" onclick="filtrerAdhActif('actifs',this)" style="font-size:.75rem;background:#d4edda;color:#155724;border-color:#c3e6cb;"><i class="fas fa-user-check"></i> Actifs</button>
+                <button class="btn btn-sm adh-actif-btn" onclick="filtrerAdhActif('inactifs',this)" style="font-size:.75rem;background:#e9ecef;color:#6c757d;border-color:#ced4da;"><i class="fas fa-user-slash"></i> Inactifs</button>
+              </div>
+              <input type="text" id="adhSearch" placeholder="Rechercher…" oninput="loadAdherents()" style="padding:5px 10px;border:1px solid #ddd;border-radius:6px;font-size:.83rem;width:150px;" />
+              <button class="btn btn-sm btn-red" onclick="exportAdherentsCSV()"><i class="fas fa-download"></i> Export CSV</button>
+              <button class="btn btn-sm btn-outline-red" onclick="syncSheets()"><i class="fab fa-google"></i> Sync</button>
             </div>
           </div>
-          <div class="table-container">
-            <table id="adherentsTable">
-              <thead><tr><th>Matricule</th><th>Nom</th><th>Prénom</th><th>Service</th><th>Statut cotis.</th><th>Depuis</th><th>Actions</th></tr></thead>
+          <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:.82rem;min-width:900px;">
+              <thead id="adhTableHead"></thead>
               <tbody id="adherentsBody"></tbody>
             </table>
           </div>
@@ -329,6 +334,7 @@
           <div class="panel-title" style="justify-content:space-between;flex-wrap:wrap;gap:8px;">
             <span><i class="fas fa-list"></i> Suivi des cartes</span>
             <div style="display:flex;gap:8px;align-items:center;">
+              <input type="text" id="carteSearch" placeholder="Rechercher…" oninput="renderCartes()" style="padding:5px 10px;border:1px solid #ddd;border-radius:6px;font-size:.82rem;width:140px;" />
               <select id="carteFilterStatut" onchange="renderCartes()" style="padding:5px 8px;border:1px solid #ddd;border-radius:6px;font-size:.82rem;">
                 <option value="">Tous statuts</option>
                 <option value="disponible">Disponible</option>
@@ -798,43 +804,137 @@
     }
 
     // ═══════════════════════════════════════════
-    // ADHÉRENTS
+    // ADHÉRENTS — tri, filtre actif/inactif
     // ═══════════════════════════════════════════
-    function loadAdherents(filter = '') {
-      const raw = getAdherentsData(parseInt(ANNEE_COURANTE));
-      const list = raw.length ? raw : [];
-      const lf   = filter.toLowerCase();
-      const filtered = lf
-        ? list.filter(a => (a.nom + ' ' + (a.prenom||'') + ' ' + (a.college||'')).toLowerCase().includes(lf))
-        : list;
+    let _adhSortCol = 'nom', _adhSortDir = 'asc', _adhFiltreActif = 'tous';
 
-      document.getElementById('adherentsBody').innerHTML = filtered.map((a, i) => {
-        const merged  = getMergedMember(a);
-        const key     = getMemberKey(a);
-        const mat     = merged.mat || `V-${String(i+1).padStart(3,'0')}`;
-        const statut  = (a.resteAPayer || 0) <= 0 ? 'payé' : 'retard';
-        const inactif = !merged.actif;
-        return `<tr${inactif ? ' style="opacity:.55;"' : ''}>
-          <td><code>${mat}</code></td>
-          <td>${merged.nom || ''}</td>
-          <td>${merged.prenom || ''}</td>
-          <td>${merged.college || '—'}</td>
-          <td>
-            <span class="badge ${statut==='payé'?'badge-green':'badge-orange'}">${statut==='payé'?'À jour':'En retard'}</span>
-            ${inactif ? '<span class="badge" style="background:#e9ecef;color:#666;margin-left:4px;">Inactif</span>' : ''}
-            ${merged.email ? '<i class="fas fa-envelope" style="color:#aaa;margin-left:4px;" title="'+merged.email+'"></i>' : ''}
-          </td>
-          <td>${merged.dateEntree || '—'}</td>
-          <td><button onclick="openFiche('${key}')" class="btn btn-sm btn-outline-red"><i class="fas fa-edit"></i> Fiche</button></td>
-        </tr>`;
-      }).join('');
-
-      // Mise à jour compteur
-      const titleSpan = document.querySelector('#section-adherents .panel-title span');
-      if (titleSpan) titleSpan.innerHTML = `<i class="fas fa-users"></i> Adhérents (${filtered.length})`;
+    function sortAdh(col) {
+      _adhSortDir = (_adhSortCol === col && _adhSortDir === 'asc') ? 'desc' : 'asc';
+      _adhSortCol = col;
+      loadAdherents();
     }
 
-    function filterTable(val) { loadAdherents(val); }
+    function filtrerAdhActif(val, btn) {
+      _adhFiltreActif = val;
+      document.querySelectorAll('.adh-actif-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      loadAdherents();
+    }
+
+    function loadAdherents() {
+      const raw = getAdherentsData(parseInt(ANNEE_COURANTE));
+      const overrides = getMembersOverrides();
+      const filtreTxt = (document.getElementById('adhSearch')?.value || '').toLowerCase().trim();
+
+      let liste = raw.map((a, i) => {
+        const key = getMemberKey(a);
+        const ov  = overrides[key] || {};
+        const actif = ov.actif !== undefined ? ov.actif : (a.actif !== undefined ? a.actif : true);
+        return { ...a, actif, _key: key, _idx: i };
+      });
+
+      // Filtre actif/inactif
+      if (_adhFiltreActif === 'actifs')   liste = liste.filter(a => a.actif);
+      if (_adhFiltreActif === 'inactifs') liste = liste.filter(a => !a.actif);
+
+      // Filtre texte
+      if (filtreTxt) liste = liste.filter(a =>
+        (a.nom+' '+(a.prenom||'')+' '+(a.college||'')+' '+(a.service||'')).toLowerCase().includes(filtreTxt));
+
+      // Tri
+      const sortFns = {
+        nom:        (a,b) => (a.nom||'').localeCompare(b.nom||'','fr'),
+        prenom:     (a,b) => (a.prenom||'').localeCompare(b.prenom||'','fr'),
+        college:    (a,b) => String(a.college||'').localeCompare(String(b.college||''),'fr'),
+        statut:     (a,b) => (a.actif===b.actif ? 0 : a.actif ? -1 : 1),
+        dateEntree: (a,b) => (a.dateEntree||'').localeCompare(b.dateEntree||''),
+        dateSortie: (a,b) => (a.dateSortie||'').localeCompare(b.dateSortie||''),
+        cotis:      (a,b) => (a.resteAPayer||0) - (b.resteAPayer||0),
+      };
+      const fn = sortFns[_adhSortCol] || sortFns.nom;
+      liste.sort((a,b) => _adhSortDir === 'asc' ? fn(a,b) : fn(b,a));
+
+      // En-têtes cliquables
+      const arrow = col => _adhSortCol !== col
+        ? '<span style="color:#ccc;font-size:.65rem;margin-left:3px;">⇅</span>'
+        : (_adhSortDir === 'asc'
+          ? '<span style="color:#cc0000;font-size:.65rem;margin-left:3px;">↑</span>'
+          : '<span style="color:#cc0000;font-size:.65rem;margin-left:3px;">↓</span>');
+      const th = (col, lbl, align='left') =>
+        `<th style="padding:8px 10px;text-align:${align};cursor:pointer;user-select:none;white-space:nowrap;background:#f5f5f5;" onclick="sortAdh('${col}')">${lbl}${arrow(col)}</th>`;
+
+      const isAdmin = user && user.role === 'admin';
+      document.getElementById('adhTableHead').innerHTML = `<tr>
+        <th style="padding:8px 10px;background:#f5f5f5;white-space:nowrap;">Mat.</th>
+        ${th('nom','Nom')}
+        ${th('prenom','Prénom')}
+        ${th('college','Col.')}
+        ${th('statut','Statut')}
+        ${th('cotis','Cotis.')}
+        ${th('dateEntree','Entrée')}
+        ${th('dateSortie','Sortie')}
+        ${isAdmin ? '<th style="padding:8px 10px;background:#f5f5f5;text-align:center;">Action</th>' : ''}
+      </tr>`;
+
+      document.getElementById('adherentsBody').innerHTML = liste.map((a, i) => {
+        const mat       = a.mat || `V-${String(a._idx+1).padStart(3,'0')}`;
+        const inactif   = !a.actif;
+        const cotisOk   = (a.resteAPayer||0) <= 0 && (a.totalRecu||0) > 0;
+        const cotisPartiel = (a.resteAPayer||0) > 0 && (a.totalRecu||0) > 0;
+        const cotisBadge = cotisOk
+          ? '<span class="badge badge-green">À jour</span>'
+          : cotisPartiel
+            ? '<span class="badge badge-orange">Partiel</span>'
+            : '<span class="badge" style="background:#f8d7da;color:#721c24;">Aucun</span>';
+        const statutBadge = inactif
+          ? '<span class="badge" style="background:#e9ecef;color:#6c757d;"><i class="fas fa-user-slash" style="font-size:.65rem;"></i> Inactif</span>'
+          : '<span class="badge badge-green" style="font-size:.72rem;"><i class="fas fa-user-check" style="font-size:.65rem;"></i> Actif</span>';
+        const rowStyle = inactif ? 'opacity:.55;background:#f9f9f9;' : '';
+        const toggleBtn = isAdmin
+          ? `<td style="padding:6px 10px;text-align:center;">
+              <button onclick="toggleActifAdmin('${a._key}',${a.actif})"
+                style="padding:3px 8px;border-radius:6px;border:1px solid ${a.actif?'#ced4da':'#c3e6cb'};cursor:pointer;font-size:.72rem;font-weight:600;background:${a.actif?'#f8f9fa':'#d4edda'};color:${a.actif?'#6c757d':'#155724'};"
+                title="${a.actif?'Rendre inactif':'Réactiver'}">
+                <i class="fas ${a.actif?'fa-user-slash':'fa-user-check'}"></i>
+              </button>
+            </td>` : '';
+        return `<tr style="${rowStyle}border-bottom:1px solid #f0f0f0;">
+          <td style="padding:6px 10px;"><code style="font-size:.75rem;">${mat}</code></td>
+          <td style="padding:6px 10px;font-weight:700;">${a.nom||''}</td>
+          <td style="padding:6px 10px;">${a.prenom||''}</td>
+          <td style="padding:6px 10px;text-align:center;font-size:.8rem;">${a.college||'—'}</td>
+          <td style="padding:6px 10px;">${statutBadge}</td>
+          <td style="padding:6px 10px;">${cotisBadge}</td>
+          <td style="padding:6px 10px;font-size:.78rem;color:#666;">${a.dateEntree||'—'}</td>
+          <td style="padding:6px 10px;font-size:.78rem;color:${a.dateSortie?'#dc3545':'#aaa'};">${a.dateSortie||'—'}</td>
+          ${toggleBtn}
+        </tr>`;
+      }).join('') || `<tr><td colspan="9" style="padding:28px;text-align:center;color:#aaa;"><i class="fas fa-search" style="font-size:1.5rem;display:block;margin-bottom:8px;opacity:.3;"></i>Aucun adhérent trouvé.</td></tr>`;
+
+      // Compteur
+      const el = document.getElementById('adhTitleCount');
+      if (el) el.innerHTML = `<i class="fas fa-users"></i> Adhérents (${liste.length}/${raw.length})`;
+    }
+
+    function exportAdherentsCSV() {
+      const raw = getAdherentsData(parseInt(ANNEE_COURANTE));
+      const overrides = getMembersOverrides();
+      const rows = [['Matricule','Nom','Prénom','Collège','Statut','Cotis.','Date entrée','Date sortie']];
+      raw.forEach((a, i) => {
+        const key = getMemberKey(a);
+        const ov  = overrides[key] || {};
+        const actif = ov.actif !== undefined ? ov.actif : (a.actif !== undefined ? a.actif : true);
+        const cotis = (a.resteAPayer||0) <= 0 && (a.totalRecu||0) > 0 ? 'À jour' : (a.totalRecu||0) > 0 ? 'Partiel' : 'Aucun';
+        rows.push([a.mat||`V-${String(i+1).padStart(3,'0')}`, a.nom||'', a.prenom||'', a.college||'', actif?'Actif':'Inactif', cotis, a.dateEntree||'', a.dateSortie||'']);
+      });
+      const csv = rows.map(r => r.map(c => '"'+(c+'').replace(/"/g,'""')+'"').join(';')).join('\n');
+      const a = document.createElement('a');
+      a.href = 'data:text/csv;charset=utf-8,﻿' + encodeURIComponent(csv);
+      a.download = `adherents_${ANNEE_COURANTE}.csv`;
+      a.click();
+    }
+
+    function filterTable(val) { loadAdherents(); }
 
     // ═══════════════════════════════════════════
     // COTISATIONS
@@ -905,11 +1005,13 @@
 
       // Tri
       const sortFns = {
-        nom:    (a,b) => (a.nom||'').localeCompare(b.nom||'','fr'),
-        prenom: (a,b) => (a.prenom||'').localeCompare(b.prenom||'','fr'),
-        college:(a,b) => (a.college||'').localeCompare(b.college||'','fr'),
-        recu:   (a,b) => (a.totalRecu||0) - (b.totalRecu||0),
-        reste:  (a,b) => (a.resteAPayer||0) - (b.resteAPayer||0),
+        nom:        (a,b) => (a.nom||'').localeCompare(b.nom||'','fr'),
+        prenom:     (a,b) => (a.prenom||'').localeCompare(b.prenom||'','fr'),
+        college:    (a,b) => (a.college||'').localeCompare(b.college||'','fr'),
+        recu:       (a,b) => (a.totalRecu||0) - (b.totalRecu||0),
+        reste:      (a,b) => (a.resteAPayer||0) - (b.resteAPayer||0),
+        dateEntree: (a,b) => (a.dateEntree||'').localeCompare(b.dateEntree||''),
+        dateSortie: (a,b) => (a.dateSortie||'').localeCompare(b.dateSortie||''),
       };
       const fn = sortFns[_adminSortCol] || sortFns.nom;
       liste.sort((a,b) => _adminSortDir === 'asc' ? fn(a,b) : fn(b,a));
@@ -922,6 +1024,7 @@
       const thS = (col, lbl, align='left') =>
         `<th style="padding:8px 10px;text-align:${align};cursor:pointer;user-select:none;white-space:nowrap;" onclick="sortAdherentsAdmin('${col}')">${lbl}${arrow(col)}</th>`;
 
+      const isAdmin = user && user.role === 'admin';
       const headEl = document.getElementById('cotisHeadAdmin');
       if (headEl) headEl.innerHTML = `<tr style="background:#f5f5f5;">
         <th style="padding:8px 10px;">Mat.</th>
@@ -932,22 +1035,24 @@
         ${thS('recu',  'Reçu',  'right')}
         ${thS('reste', 'Reste', 'right')}
         <th style="padding:8px 10px;text-align:center;">Statut</th>
-        <th style="padding:8px 10px;text-align:center;font-size:.73rem;">Actif</th>
+        ${thS('dateEntree','Entrée')}
+        ${thS('dateSortie','Sortie')}
+        ${isAdmin ? '<th style="padding:8px 10px;text-align:center;font-size:.73rem;">Actif</th>' : ''}
       </tr>`;
 
       document.getElementById('cotisBody').innerHTML = liste.map(a => {
         const mois   = a.mois || Array(12).fill(0);
         const reste  = a.resteAPayer || 0;
         const aJour  = reste <= 0 && (a.totalRecu||0) > 0;
-        const rowBg  = reste > 0 && a.totalRecu === 0 ? 'background:#fff5f5;' : reste > 0 ? 'background:#fffbf0;' : '';
+        const rowBg  = !a.actif ? 'background:#f5f5f5;opacity:.7;' : reste > 0 && a.totalRecu === 0 ? 'background:#fff5f5;' : reste > 0 ? 'background:#fffbf0;' : '';
         const mat    = a.mat || '—';
         const moisCells = mois.map(v =>
           `<td style="padding:4px 6px;text-align:center;"><span style="display:inline-block;width:20px;height:20px;border-radius:50%;background:${v?'#28a745':'#eee'};color:${v?'#fff':'#bbb'};font-size:.68rem;line-height:20px;">${v?'✓':''}</span></td>`
         ).join('');
-        const toggleBtn = `<button onclick="toggleActifAdmin('${getMemberKey(a)}',${a.actif})"
+        const toggleBtn = isAdmin ? `<td style="padding:6px 10px;text-align:center;"><button onclick="toggleActifAdmin('${getMemberKey(a)}',${a.actif})"
           style="padding:2px 7px;border-radius:5px;border:1px solid ${a.actif?'#ced4da':'#c3e6cb'};cursor:pointer;font-size:.7rem;background:${a.actif?'#f8f9fa':'#d4edda'};color:${a.actif?'#6c757d':'#155724'};">
-          ${a.actif?'Actif':'Inactif'}
-        </button>`;
+          <i class="fas ${a.actif?'fa-user-slash':'fa-user-check'}"></i> ${a.actif?'Actif':'Inactif'}
+        </button></td>` : '';
         return `<tr style="${rowBg}border-bottom:1px solid #f0f0f0;">
           <td style="padding:6px 10px;font-size:.78rem;"><code>${mat}</code></td>
           <td style="padding:6px 10px;font-weight:700;">${a.nom||''}</td>
@@ -957,9 +1062,11 @@
           <td style="padding:6px 10px;text-align:right;font-weight:700;color:#28a745;">${(a.totalRecu||0)>0?(a.totalRecu).toLocaleString('fr-FR',{minimumFractionDigits:2})+' €':'—'}</td>
           <td style="padding:6px 10px;text-align:right;font-weight:700;color:${reste>0?'#cc0000':reste<0?'#007bff':'#28a745'};">${reste!==0?(reste).toLocaleString('fr-FR',{minimumFractionDigits:2})+' €':'✓'}</td>
           <td style="padding:6px 10px;text-align:center;"><span class="badge ${aJour?'badge-green':'badge-orange'}">${aJour?'À jour':'Retard'}</span></td>
-          <td style="padding:6px 10px;text-align:center;">${toggleBtn}</td>
+          <td style="padding:6px 10px;font-size:.78rem;color:#666;">${a.dateEntree||'—'}</td>
+          <td style="padding:6px 10px;font-size:.78rem;color:${a.dateSortie?'#dc3545':'#aaa'};">${a.dateSortie||'—'}</td>
+          ${toggleBtn}
         </tr>`;
-      }).join('') || `<tr><td colspan="18" style="padding:24px;text-align:center;color:#aaa;">Aucun adhérent trouvé.</td></tr>`;
+      }).join('') || `<tr><td colspan="20" style="padding:24px;text-align:center;color:#aaa;">Aucun adhérent trouvé.</td></tr>`;
     }
 
     function toggleActifAdmin(key, currentActif) {
@@ -1228,23 +1335,57 @@
       renderCartes();
     }
 
+    let _carteSortCol = 'number', _carteSortDir = 'asc';
+
+    function sortCartes(col) {
+      _carteSortDir = (_carteSortCol === col && _carteSortDir === 'asc') ? 'desc' : 'asc';
+      _carteSortCol = col;
+      renderCartes();
+    }
+
     function renderCartes() {
-      const cards = getCards();
-      const filter = document.getElementById('carteFilterStatut')?.value || '';
-      const list = filter ? cards.filter(c => c.statut === filter) : cards;
+      const filter    = document.getElementById('carteFilterStatut')?.value || '';
+      const searchTxt = (document.getElementById('carteSearch')?.value || '').toLowerCase().trim();
+      let list = getCards();
+      if (filter)    list = list.filter(c => c.statut === filter);
+      if (searchTxt) list = list.filter(c => (c.number+' '+(c.membre||'')+' '+(c.annee||'')).toLowerCase().includes(searchTxt));
+
+      // Tri
+      const sortFns = {
+        number:          (a,b) => (a.number||0) - (b.number||0),
+        annee:           (a,b) => (a.annee||'').localeCompare(b.annee||''),
+        statut:          (a,b) => (a.statut||'').localeCompare(b.statut||''),
+        membre:          (a,b) => (a.membre||'').localeCompare(b.membre||'','fr'),
+        dateAttribution: (a,b) => (a.dateAttribution||'').localeCompare(b.dateAttribution||''),
+      };
+      const fn = sortFns[_carteSortCol] || sortFns.number;
+      list.sort((a,b) => _carteSortDir === 'asc' ? fn(a,b) : fn(b,a));
+
       const tbody = document.getElementById('cartesBody');
       if (!tbody) return;
+
+      // En-têtes avec flèches de tri
+      const thead = tbody.closest('table')?.querySelector('thead');
+      if (thead) {
+        const arr = col => _carteSortCol !== col
+          ? '<span style="color:#ccc;font-size:.65rem;margin-left:3px;">⇅</span>'
+          : (_carteSortDir==='asc'
+            ? '<span style="color:#cc0000;font-size:.65rem;margin-left:3px;">↑</span>'
+            : '<span style="color:#cc0000;font-size:.65rem;margin-left:3px;">↓</span>');
+        const th = (col,lbl) => `<th style="cursor:pointer;user-select:none;white-space:nowrap;" onclick="sortCartes('${col}')">${lbl}${arr(col)}</th>`;
+        thead.innerHTML = `<tr>${th('number','N° Carte')}${th('annee','Année')}${th('statut','Statut')}${th('membre','Adhérent')}${th('dateAttribution','Date attribution')}<th>Actions</th></tr>`;
+      }
 
       const statutBadge = {
         disponible: '<span class="badge badge-blue">Disponible</span>',
         attribuee:  '<span class="badge badge-orange">Attribuée</span>',
         remise:     '<span class="badge badge-green">Remise</span>',
-        retournee:  '<span class="badge badge-grey">Retournée</span>',
+        retournee:  '<span class="badge" style="background:#e9ecef;color:#666;">Retournée</span>',
       };
 
       if (!list.length) {
         tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#aaa;padding:20px;">
-          ${filter ? 'Aucune carte avec ce statut.' : 'Aucune carte enregistrée. Enregistrez un lot reçu de la fédération.'}</td></tr>`;
+          ${filter || searchTxt ? 'Aucune carte pour ces critères.' : 'Aucune carte enregistrée. Enregistrez un lot reçu de la fédération.'}</td></tr>`;
         return;
       }
       tbody.innerHTML = list.map(c => `

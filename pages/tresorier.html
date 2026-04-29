@@ -825,13 +825,16 @@
 
       // Tri
       const sortFns = {
-        nom:    (a,b) => (a.nom||'').localeCompare(b.nom||'','fr'),
-        prenom: (a,b) => (a.prenom||'').localeCompare(b.prenom||'','fr'),
-        college:(a,b) => (a.college||'').localeCompare(b.college||'','fr'),
-        mode:   (a,b) => (a.modePaiement||'').localeCompare(b.modePaiement||'','fr'),
-        recu:   (a,b) => (a.totalRecu||0)   - (b.totalRecu||0),
-        du:     (a,b) => (a.totalDu||0)     - (b.totalDu||0),
-        reste:  (a,b) => (a.resteAPayer||0) - (b.resteAPayer||0),
+        nom:        (a,b) => (a.nom||'').localeCompare(b.nom||'','fr'),
+        prenom:     (a,b) => (a.prenom||'').localeCompare(b.prenom||'','fr'),
+        college:    (a,b) => (a.college||'').localeCompare(b.college||'','fr'),
+        mode:       (a,b) => (a.modePaiement||'').localeCompare(b.modePaiement||'','fr'),
+        recu:       (a,b) => (a.totalRecu||0)   - (b.totalRecu||0),
+        du:         (a,b) => (a.totalDu||0)     - (b.totalDu||0),
+        reste:      (a,b) => (a.resteAPayer||0) - (b.resteAPayer||0),
+        dateEntree: (a,b) => (a.dateEntree||'').localeCompare(b.dateEntree||''),
+        dateSortie: (a,b) => (a.dateSortie||'').localeCompare(b.dateSortie||''),
+        statut:     (a,b) => (a.actif===b.actif ? 0 : a.actif ? -1 : 1),
       };
       const fn = sortFns[_sortCol] || sortFns.nom;
       liste.sort((a,b) => _sortDir === 'asc' ? fn(a,b) : fn(b,a));
@@ -845,15 +848,18 @@
         `<th style="padding:8px 10px;text-align:${align};cursor:pointer;user-select:none;white-space:nowrap;" onclick="sortAdherents('${col}')">${lbl}${arrow(col)}</th>`;
 
       document.getElementById('cotisTableHead').innerHTML = `<tr style="background:#f5f5f5;">
-        ${thS('nom',    'Nom')}
-        ${thS('prenom', 'Prénom')}
-        ${thS('college','Col.','center')}
-        ${thS('mode',   'Mode')}
+        ${thS('nom',        'Nom')}
+        ${thS('prenom',     'Prénom')}
+        ${thS('college',    'Col.','center')}
+        ${thS('mode',       'Mode')}
         ${MOIS_NOMS.map(m=>`<th style="padding:8px 6px;text-align:center;font-size:.75rem;">${m}</th>`).join('')}
-        ${thS('recu',  'Reçu',  'right')}
-        ${thS('du',    'Dû',    'right')}
-        ${thS('reste', 'Reste', 'right')}
+        ${thS('recu',       'Reçu',   'right')}
+        ${thS('du',         'Dû',     'right')}
+        ${thS('reste',      'Reste',  'right')}
         <th style="padding:8px 10px;text-align:left;font-size:.75rem;">Commentaire</th>
+        ${thS('dateEntree', 'Entrée')}
+        ${thS('dateSortie', 'Sortie')}
+        ${thS('statut',     'Statut', 'center')}
         <th style="padding:8px 10px;text-align:center;font-size:.75rem;">Actif</th>
       </tr>`;
 
@@ -881,6 +887,11 @@
           <td style="padding:6px 10px;text-align:right;color:#666;">${a.totalDu>0?fmt(a.totalDu):'—'}</td>
           <td style="padding:6px 10px;text-align:right;font-weight:700;color:${resteColor};">${reste!==0?fmt(reste):'✓'}</td>
           <td style="padding:6px 10px;font-size:.75rem;color:#888;max-width:120px;">${a.commentaire||''}</td>
+          <td style="padding:6px 10px;font-size:.78rem;color:#666;">${a.dateEntree||'—'}</td>
+          <td style="padding:6px 10px;font-size:.78rem;color:${a.dateSortie?'#dc3545':'#aaa'};">${a.dateSortie||'—'}</td>
+          <td style="padding:6px 10px;text-align:center;">${a.actif
+            ? '<span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:10px;background:#d4edda;color:#155724;font-size:.72rem;font-weight:700;"><i class="fas fa-user-check"></i>Actif</span>'
+            : '<span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:10px;background:#e9ecef;color:#6c757d;font-size:.72rem;font-weight:700;"><i class="fas fa-user-slash"></i>Inactif</span>'}</td>
           <td style="padding:6px 10px;text-align:center;">${toggleBtn}</td>
         </tr>`;
       }).join('') || `<tr><td colspan="21" style="padding:28px;text-align:center;color:#aaa;"><i class="fas fa-search" style="font-size:1.5rem;display:block;margin-bottom:8px;opacity:.3;"></i>Aucun adhérent trouvé pour ces critères.</td></tr>`;
