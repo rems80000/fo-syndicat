@@ -35,6 +35,7 @@
         <div class="sidebar-nav-item" onclick="showSection('gdrive')"><i class="fab fa-google-drive"></i> Google Drive</div>
         <div class="sidebar-nav-item" onclick="showSection('cartes')"><i class="fas fa-id-card"></i> Cartes syndicales</div>
         <div class="sidebar-nav-item" onclick="showSection('planning')"><i class="fas fa-calendar-alt"></i> Planning</div>
+        <div class="sidebar-nav-item" onclick="showSection('diffusion')"><i class="fas fa-envelope-open-text"></i> Liste de diffusion</div>
         <div class="sidebar-nav-item" onclick="showSection('journal')"><i class="fas fa-history"></i> Journal</div>
         <div class="sidebar-nav-item" onclick="showSection('utilisateurs')"><i class="fas fa-user-cog"></i> Utilisateurs</div>
       </nav>
@@ -417,6 +418,55 @@
         </div>
       </div>
 
+      <!-- LISTE DE DIFFUSION -->
+      <div id="section-diffusion" style="display:none">
+        <h1 class="dashboard-title">Liste de diffusion</h1>
+        <p class="dashboard-subtitle">Emails des membres actifs — copie en un clic pour Outlook ou Gmail</p>
+
+        <!-- KPI -->
+        <div class="cards-row" id="diffusionKPI" style="margin-bottom:16px;"></div>
+
+        <!-- Copie rapide -->
+        <div class="panel" style="margin-bottom:16px;">
+          <div class="panel-title" style="justify-content:space-between;flex-wrap:wrap;gap:8px;">
+            <span><i class="fas fa-copy"></i> Copier les adresses email</span>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn btn-red" onclick="copierEmails(';')"><i class="fas fa-envelope"></i> Copier — Outlook/Thunderbird</button>
+              <button class="btn btn-outline-red" onclick="copierEmails(',')"><i class="fab fa-google"></i> Copier — Gmail</button>
+              <button class="btn btn-outline-red" onclick="loadListeDiffusion()"><i class="fas fa-sync-alt"></i> Actualiser</button>
+            </div>
+          </div>
+          <div style="margin-top:12px;">
+            <label style="font-size:.82rem;color:#666;margin-bottom:6px;display:block;"><i class="fas fa-eye"></i> Aperçu — <span id="diffEmailCount">0</span> adresse(s)</label>
+            <textarea id="emailsPreview" readonly style="width:100%;min-height:70px;padding:10px 14px;border:1px solid #e0e0e0;border-radius:8px;font-size:.8rem;font-family:monospace;color:#333;background:#f9f9f9;resize:vertical;box-sizing:border-box;"></textarea>
+          </div>
+        </div>
+
+        <!-- Membres inclus (avec email) -->
+        <div class="panel" style="margin-bottom:16px;">
+          <div class="panel-title" style="justify-content:space-between;flex-wrap:wrap;gap:8px;">
+            <span id="diffusionListTitle"><i class="fas fa-check-circle" style="color:#28a745;"></i> Membres inclus dans la diffusion</span>
+            <input type="text" id="diffusionSearch" placeholder="Rechercher…" oninput="loadListeDiffusion()" style="padding:5px 10px;border:1px solid #ddd;border-radius:6px;font-size:.82rem;width:160px;" />
+          </div>
+          <div id="diffusionList" style="max-height:440px;overflow-y:auto;"></div>
+        </div>
+
+        <!-- Membres sans email -->
+        <div class="panel" id="diffusionNoEmailPanel" style="margin-bottom:16px;">
+          <div class="panel-title"><i class="fas fa-exclamation-triangle" style="color:#f0ad4e;"></i> Membres actifs sans adresse email</div>
+          <div id="diffusionNoEmailList"></div>
+        </div>
+
+        <!-- Membres auto-inactifs -->
+        <div class="panel" id="diffusionAutoInactifsPanel" style="margin-bottom:16px;">
+          <div class="panel-title" style="justify-content:space-between;">
+            <span><i class="fas fa-user-clock" style="color:#6c757d;"></i> Membres auto-inactifs <small style="font-size:.75rem;font-weight:400;">(aucun paiement depuis +6 mois)</small></span>
+            <span id="diffAutoCount" style="font-size:.82rem;color:#aaa;"></span>
+          </div>
+          <div id="diffusionAutoInactifsList"></div>
+        </div>
+      </div>
+
       <div id="section-utilisateurs" style="display:none">
         <h1 class="dashboard-title">Gestion des accès</h1>
         <p class="dashboard-subtitle">Gérez les rôles et les droits des utilisateurs</p>
@@ -646,6 +696,7 @@
       if (id === 'cartes')      loadCartes();
       if (id === 'planning')    loadPlanningAdminSection();
       if (id === 'journal')     loadJournalAdmin();
+      if (id === 'diffusion')   loadListeDiffusion();
     }
 
     function loadJournalAdmin() {
@@ -671,8 +722,8 @@
       const dashAnnee2 = document.getElementById('dashAnnee2');
       if (dashAnnee2) dashAnnee2.textContent = ANNEE_COURANTE;
 
-      // Données statiques Excel
-      const adherents = getAdherentsData(parseInt(ANNEE_COURANTE));
+      // Données statiques Excel (actif via override manuel > règle 6 mois > base)
+      const adherents = getAdherentsData(parseInt(ANNEE_COURANTE)).map(a => ({ ...a, actif: resolveActif(a) }));
       const actifs    = adherents.filter(a => a.actif);
       const ajour     = actifs.filter(a => (a.resteAPayer || 0) <= 0);
       const retard    = actifs.filter(a => (a.resteAPayer || 0) > 0);
@@ -827,9 +878,8 @@
       const filtreTxt = (document.getElementById('adhSearch')?.value || '').toLowerCase().trim();
 
       let liste = raw.map((a, i) => {
-        const key = getMemberKey(a);
-        const ov  = overrides[key] || {};
-        const actif = ov.actif !== undefined ? ov.actif : (a.actif !== undefined ? a.actif : true);
+        const key   = getMemberKey(a);
+        const actif = resolveActif(a);   // override manuel > règle 6 mois > base
         return { ...a, actif, _key: key, _idx: i };
       });
 
@@ -877,18 +927,23 @@
       </tr>`;
 
       document.getElementById('adherentsBody').innerHTML = liste.map((a, i) => {
-        const mat       = a.mat || `V-${String(a._idx+1).padStart(3,'0')}`;
-        const inactif   = !a.actif;
-        const cotisOk   = (a.resteAPayer||0) <= 0 && (a.totalRecu||0) > 0;
-        const cotisPartiel = (a.resteAPayer||0) > 0 && (a.totalRecu||0) > 0;
-        const cotisBadge = cotisOk
-          ? '<span class="badge badge-green">À jour</span>'
-          : cotisPartiel
-            ? '<span class="badge badge-orange">Partiel</span>'
-            : '<span class="badge" style="background:#f8d7da;color:#721c24;">Aucun</span>';
-        const statutBadge = inactif
-          ? '<span class="badge" style="background:#e9ecef;color:#6c757d;"><i class="fas fa-user-slash" style="font-size:.65rem;"></i> Inactif</span>'
-          : '<span class="badge badge-green" style="font-size:.72rem;"><i class="fas fa-user-check" style="font-size:.65rem;"></i> Actif</span>';
+        const mat         = a.mat || `V-${String(a._idx+1).padStart(3,'0')}`;
+        const inactif     = !a.actif;
+        const autoInactif = !a.actif && (getMembersOverrides()[a._key]?.actif === undefined) && isAutoInactif6mois(a);
+        const cotisOk     = !inactif && (a.resteAPayer||0) <= 0 && (a.totalRecu||0) > 0;
+        const cotisPartiel = !inactif && (a.resteAPayer||0) > 0 && (a.totalRecu||0) > 0;
+        const cotisBadge  = inactif
+          ? '<span style="font-size:.73rem;color:#aaa;">—</span>'
+          : cotisOk
+            ? '<span class="badge badge-green">À jour</span>'
+            : cotisPartiel
+              ? '<span class="badge badge-orange">Partiel</span>'
+              : '<span class="badge" style="background:#f8d7da;color:#721c24;">Aucun</span>';
+        const statutBadge = autoInactif
+          ? '<span class="badge" style="background:#fff3cd;color:#856404;font-size:.72rem;" title="Aucun paiement depuis +6 mois"><i class="fas fa-clock" style="font-size:.62rem;"></i> Auto-inactif</span>'
+          : inactif
+            ? '<span class="badge" style="background:#e9ecef;color:#6c757d;font-size:.72rem;"><i class="fas fa-user-slash" style="font-size:.62rem;"></i> Inactif</span>'
+            : '<span class="badge badge-green" style="font-size:.72rem;"><i class="fas fa-user-check" style="font-size:.62rem;"></i> Actif</span>';
         const rowStyle = inactif ? 'opacity:.55;background:#f9f9f9;' : '';
         const toggleBtn = isAdmin
           ? `<td style="padding:6px 10px;text-align:center;">
@@ -959,12 +1014,9 @@
       const MOIS_LABELS = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
       const filtreTxt = (document.getElementById('cotisSearch')?.value || '').toLowerCase().trim();
 
-      const overrides = getMembersOverrides();
-      let data = getAdherentsData(parseInt(ANNEE_COURANTE)).map(a => {
-        const key = getMemberKey(a);
-        const ov = overrides[key] || {};
-        return { ...a, actif: ov.actif !== undefined ? ov.actif : a.actif };
-      });
+      let data = getAdherentsData(parseInt(ANNEE_COURANTE)).map(a => ({
+        ...a, actif: resolveActif(a)   // override manuel > règle 6 mois > base
+      }));
       const actifs = data.filter(a => a.actif);
 
       // Grille mensuelle totaux — uniquement jusqu'au mois en cours (ou jusqu'en déc. pour les années passées)
@@ -1134,6 +1186,202 @@
     function getMergedMember(a) {
       const overrides = getMembersOverrides();
       return Object.assign({}, a, overrides[getMemberKey(a)] || {});
+    }
+
+    // ═══════════════════════════════════════════
+    // AUTO-INACTIF : aucun paiement depuis +6 mois
+    // ═══════════════════════════════════════════
+    function isAutoInactif6mois(a) {
+      const now = new Date();
+      const currentAbsMonth = now.getFullYear() * 12 + now.getMonth();
+      const seuilAbsMonth   = currentAbsMonth - 6; // ex : avril 2026 → octobre 2025
+
+      let lastPaymentAbsMonth = -1;
+      const key = getMemberKey(a);
+
+      // Parcourir toutes les années disponibles dans TREASURY_DATA
+      if (typeof TREASURY_DATA !== 'undefined' && TREASURY_DATA.adherents) {
+        Object.entries(TREASURY_DATA.adherents).forEach(([anneeStr, adhs]) => {
+          const annee = parseInt(anneeStr);
+          const found = adhs.find(m => getMemberKey(m) === key);
+          if (found && Array.isArray(found.mois)) {
+            found.mois.forEach((v, i) => {
+              if (v === 1) {
+                const abs = annee * 12 + i;
+                if (abs > lastPaymentAbsMonth) lastPaymentAbsMonth = abs;
+              }
+            });
+          }
+        });
+      }
+
+      if (lastPaymentAbsMonth === -1) {
+        // Aucun paiement trouvé — auto-inactif seulement si membre ancien (> 6 mois)
+        if (!a.dateEntree || a.dateEntree === 'Avant 2023') return true;
+        const m = a.dateEntree.match(/(\d{4})-(\d{2})/);
+        if (!m) return false;
+        const entreeAbsMonth = parseInt(m[1]) * 12 + parseInt(m[2]) - 1;
+        return entreeAbsMonth < seuilAbsMonth;
+      }
+      return lastPaymentAbsMonth < seuilAbsMonth;
+    }
+
+    // Résolution effective de l'actif : override manuel > règle auto > valeur de base
+    function resolveActif(a) {
+      const ov = getMembersOverrides()[getMemberKey(a)] || {};
+      if (ov.actif !== undefined) return ov.actif;   // Override manuel → priorité
+      if (isAutoInactif6mois(a))  return false;       // Règle 6 mois
+      return a.actif !== undefined ? a.actif : true;  // Valeur de base
+    }
+
+    // ═══════════════════════════════════════════
+    // LISTE DE DIFFUSION
+    // ═══════════════════════════════════════════
+    function loadListeDiffusion() {
+      const raw       = getAdherentsData(parseInt(ANNEE_COURANTE));
+      const overrides = getMembersOverrides();
+      const searchTxt = (document.getElementById('diffusionSearch')?.value || '').toLowerCase().trim();
+
+      // Résoudre statut de chaque membre
+      const tous = raw.map(a => {
+        const key  = getMemberKey(a);
+        const ov   = overrides[key] || {};
+        const actif      = resolveActif(a);
+        const autoInactif = (ov.actif === undefined) && isAutoInactif6mois(a);
+        const email = ov.email || a.email || '';
+        return { ...a, actif, email, _key: key, _autoInactif: autoInactif };
+      });
+
+      // Membres actifs en liste de diffusion
+      const actifsDiff = tous.filter(a => a.actif && a.listeDiffusion !== 'NON');
+      const filtered   = searchTxt
+        ? actifsDiff.filter(a => (a.nom+' '+(a.prenom||'')+' '+a.email).toLowerCase().includes(searchTxt))
+        : actifsDiff;
+
+      const avecEmail  = filtered.filter(a => a.email);
+      const sansEmail  = filtered.filter(a => !a.email);
+      const autoInactifs = tous.filter(a => a._autoInactif);
+
+      // Aperçu emails
+      const emailsList = avecEmail.map(a => a.email);
+      const preview = document.getElementById('emailsPreview');
+      if (preview) preview.value = emailsList.join('; ');
+      const countEl = document.getElementById('diffEmailCount');
+      if (countEl) countEl.textContent = emailsList.length;
+
+      // KPI
+      const kpiEl = document.getElementById('diffusionKPI');
+      if (kpiEl) kpiEl.innerHTML = `
+        <div class="info-card" style="border-top-color:#28a745;">
+          <div class="info-card-label">Membres actifs diffusion</div>
+          <div class="info-card-value" style="color:#28a745;">${actifsDiff.length}</div>
+        </div>
+        <div class="info-card" style="border-top-color:#007bff;">
+          <div class="info-card-label">Emails disponibles</div>
+          <div class="info-card-value" style="color:#007bff;">${avecEmail.length}</div>
+          <div class="info-card-sub">${emailsList.length} prêt(s) à copier</div>
+        </div>
+        <div class="info-card" style="border-top-color:#f0ad4e;">
+          <div class="info-card-label">Emails manquants</div>
+          <div class="info-card-value" style="color:#f0ad4e;">${sansEmail.length}</div>
+        </div>
+        <div class="info-card" style="border-top-color:#6c757d;">
+          <div class="info-card-label">Auto-inactifs (6 mois)</div>
+          <div class="info-card-value" style="color:#6c757d;">${autoInactifs.length}</div>
+          <div class="info-card-sub">exclus automatiquement</div>
+        </div>`;
+
+      // Titre liste
+      const titleEl = document.getElementById('diffusionListTitle');
+      if (titleEl) titleEl.innerHTML = `<i class="fas fa-check-circle" style="color:#28a745;"></i> Membres inclus (${avecEmail.length} emails)`;
+
+      // Liste avec emails
+      const listEl = document.getElementById('diffusionList');
+      if (listEl) listEl.innerHTML = avecEmail.length
+        ? avecEmail.map(a => `
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid #f5f5f5;gap:8px;flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:34px;height:34px;border-radius:50%;background:#cc0000;color:#fff;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0;">${(a.nom||'?')[0]}${(a.prenom||'')[0]||'?'}</div>
+              <div>
+                <div style="font-weight:700;font-size:.88rem;">${a.nom} ${a.prenom||''}</div>
+                <div style="font-size:.76rem;color:#888;">Collège ${a.college||'—'} · ${a.modePaiement||''}</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <a href="mailto:${a.email}" style="font-size:.83rem;color:#007bff;text-decoration:none;" title="Envoyer un email">${a.email}</a>
+              <button onclick="openFiche('${a._key}')" class="btn btn-sm btn-outline-red" title="Modifier la fiche"><i class="fas fa-edit"></i></button>
+            </div>
+          </div>`)
+          .join('')
+        : '<p style="padding:24px;text-align:center;color:#aaa;"><i class="fas fa-inbox" style="font-size:1.5rem;display:block;margin-bottom:8px;opacity:.3;"></i>Aucun email disponible. Renseignez les emails via les fiches adhérents.</p>';
+
+      // Sans email
+      const noEmailPanel = document.getElementById('diffusionNoEmailPanel');
+      const noEmailList  = document.getElementById('diffusionNoEmailList');
+      if (noEmailPanel && noEmailList) {
+        noEmailPanel.style.display = sansEmail.length ? '' : 'none';
+        noEmailList.innerHTML = sansEmail.map(a => `
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 14px;border-bottom:1px solid #f5f5f5;flex-wrap:wrap;gap:8px;">
+            <div>
+              <span style="font-weight:700;font-size:.88rem;">${a.nom} ${a.prenom||''}</span>
+              <span style="font-size:.76rem;color:#aaa;margin-left:8px;">Col. ${a.college||'—'}</span>
+            </div>
+            <button onclick="openFiche('${a._key}')" class="btn btn-sm btn-outline-red" style="font-size:.75rem;"><i class="fas fa-plus"></i> Ajouter email</button>
+          </div>`).join('');
+      }
+
+      // Auto-inactifs
+      const aiPanel = document.getElementById('diffusionAutoInactifsPanel');
+      const aiList  = document.getElementById('diffusionAutoInactifsList');
+      const aiCount = document.getElementById('diffAutoCount');
+      if (aiPanel && aiList) {
+        aiPanel.style.display = autoInactifs.length ? '' : 'none';
+        if (aiCount) aiCount.textContent = `${autoInactifs.length} membre(s)`;
+        aiList.innerHTML = autoInactifs.map(a => `
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 14px;border-bottom:1px solid #f5f5f5;opacity:.7;flex-wrap:wrap;gap:8px;">
+            <div>
+              <span style="font-weight:700;font-size:.88rem;">${a.nom} ${a.prenom||''}</span>
+              <span class="badge" style="background:#e9ecef;color:#6c757d;margin-left:6px;font-size:.72rem;">Auto-inactif</span>
+              <span style="font-size:.76rem;color:#aaa;margin-left:6px;">Dernier paiement inconnu ou +6 mois</span>
+            </div>
+            <button onclick="toggleActifAdmin('${a._key}',false); loadListeDiffusion();" class="btn btn-sm btn-outline-red" title="Forcer actif">
+              <i class="fas fa-user-check"></i> Réactiver manuellement
+            </button>
+          </div>`).join('');
+      }
+    }
+
+    function copierEmails(separator) {
+      separator = separator || ';';
+      const raw       = getAdherentsData(parseInt(ANNEE_COURANTE));
+      const overrides = getMembersOverrides();
+      const emails = raw
+        .filter(a => {
+          const actif = resolveActif(a);
+          return actif && a.listeDiffusion !== 'NON';
+        })
+        .map(a => {
+          const ov = overrides[getMemberKey(a)] || {};
+          return ov.email || a.email || '';
+        })
+        .filter(e => e);
+
+      const text = emails.join(separator + ' ');
+      if (!text) { toast('⚠ Aucun email à copier — renseignez les emails dans les fiches adhérents.', '#f0ad4e'); return; }
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text)
+          .then(() => toast(`✅ ${emails.length} email(s) copié(s) dans le presse-papier !`))
+          .catch(() => _copierFallback(text, emails.length));
+      } else {
+        _copierFallback(text, emails.length);
+      }
+    }
+
+    function _copierFallback(text, count) {
+      const ta = document.getElementById('emailsPreview');
+      if (ta) { ta.select(); document.execCommand('copy'); toast(`✅ ${count} email(s) copié(s) !`); }
+      else { toast('⚠ Copiez manuellement depuis la zone aperçu.', '#f0ad4e'); }
     }
 
     // ═══════════════════════════════════════════

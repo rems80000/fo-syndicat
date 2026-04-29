@@ -757,6 +757,44 @@
     function saveMembresOverrides(obj) { localStorage.setItem('fo_members_data', JSON.stringify(obj)); }
     function getMembreKey(a) { return `${(a.nom||'').toUpperCase()}_${(a.prenom||'').toUpperCase()}`; }
 
+    // ── Auto-inactif : aucun paiement depuis +6 mois (synchronisé avec admin.html) ──
+    function isAutoInactif6mois(a) {
+      const now = new Date();
+      const currentAbsMonth = now.getFullYear() * 12 + now.getMonth();
+      const seuilAbsMonth   = currentAbsMonth - 6;
+      let lastPaymentAbsMonth = -1;
+      const key = getMembreKey(a);
+      if (typeof TREASURY_DATA !== 'undefined' && TREASURY_DATA.adherents) {
+        Object.entries(TREASURY_DATA.adherents).forEach(([anneeStr, adhs]) => {
+          const annee = parseInt(anneeStr);
+          const found = adhs.find(m => getMembreKey(m) === key);
+          if (found && Array.isArray(found.mois)) {
+            found.mois.forEach((v, i) => {
+              if (v === 1) {
+                const abs = annee * 12 + i;
+                if (abs > lastPaymentAbsMonth) lastPaymentAbsMonth = abs;
+              }
+            });
+          }
+        });
+      }
+      if (lastPaymentAbsMonth === -1) {
+        if (!a.dateEntree || a.dateEntree === 'Avant 2023') return true;
+        const m = a.dateEntree.match(/(\d{4})-(\d{2})/);
+        if (!m) return false;
+        return parseInt(m[1]) * 12 + parseInt(m[2]) - 1 < seuilAbsMonth;
+      }
+      return lastPaymentAbsMonth < seuilAbsMonth;
+    }
+
+    // Résolution effective de l'actif : override manuel > règle auto > valeur de base
+    function resolveActifTreso(a) {
+      const ov = getMembresOverrides()[getMembreKey(a)] || {};
+      if (ov.actif !== undefined) return ov.actif;
+      if (isAutoInactif6mois(a))  return false;
+      return a.actif !== undefined ? a.actif : true;
+    }
+
     function toggleActifMembre(nomKey, currentActif) {
       const ov = getMembresOverrides();
       if (!ov[nomKey]) ov[nomKey] = {};
@@ -780,15 +818,9 @@
       const filtre = (document.getElementById('rechercheAdherent').value || '').toLowerCase().trim();
       document.getElementById('cotisAnneeLabel').textContent = annee;
 
-      const overrides = getMembresOverrides();
-      const applyOv = arr => arr.map(a => {
-        const key = getMembreKey(a);
-        const o = overrides[key] || {};
-        return { ...a, actif: o.actif !== undefined ? o.actif : a.actif, _key: key };
-      });
-
       let base = (typeof TREASURY_DATA !== 'undefined') ? (TREASURY_DATA.adherents[annee] || []) : [];
-      base = applyOv(base);
+      // Résoudre actif : override manuel > règle 6 mois > base
+      base = base.map(a => ({ ...a, actif: resolveActifTreso(a), _key: getMembreKey(a) }));
 
       // KPI sur tous les actifs (avant filtre statut / texte)
       const actifsAll = base.filter(a => a.actif);
