@@ -45,7 +45,9 @@ const Auth = (() => {
   function logout() {
     sessionStorage.removeItem('fo_user');
     sessionStorage.removeItem('fo_token');
-    window.location.href = '/login.html';
+    // Chemin relatif — compatible GitHub Pages (/fo-syndicat/) et Netlify (/)
+    const inPages = window.location.pathname.includes('/pages/');
+    window.location.href = inPages ? '../login.html' : 'login.html';
   }
 
   function getUser() {
