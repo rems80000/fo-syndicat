@@ -152,12 +152,12 @@
           </div>
           <div class="table-container">
             <table id="opsTable">
-              <thead>
+              <thead id="opsHead">
                 <tr>
-                  <th>Date</th>
+                  <th style="cursor:pointer;user-select:none;" onclick="sortOps('date')">Date <span id="opsArrowDate" style="color:#ccc;font-size:.65rem;">⇅</span></th>
                   <th>Libellé bancaire</th>
-                  <th>Crédit</th>
-                  <th>Débit</th>
+                  <th style="cursor:pointer;user-select:none;" onclick="sortOps('credit')">Crédit <span id="opsArrowCredit" style="color:#ccc;font-size:.65rem;">⇅</span></th>
+                  <th style="cursor:pointer;user-select:none;" onclick="sortOps('debit')">Débit <span id="opsArrowDebit" style="color:#ccc;font-size:.65rem;">⇅</span></th>
                   <th>Adhérent identifié</th>
                   <th>Statut</th>
                   <th>Action</th>
@@ -505,9 +505,34 @@
       document.getElementById('statTotal').textContent = stats.totalCredit + ' €';
     }
 
+    // ── Tri tableau des opérations ──
+    let _opsSortCol = 'date', _opsSortDir = 'desc'; // tri par date décroissant par défaut
+
+    function sortOps(col) {
+      _opsSortDir = (_opsSortCol === col && _opsSortDir === 'asc') ? 'desc' : 'asc';
+      _opsSortCol = col;
+      renderOps(filterActif);
+    }
+
     function renderOps(filtre) {
       filterActif = filtre;
-      const list = filtre === 'tous' ? operations : operations.filter(o => o.statut === filtre || (filtre === 'pointe_auto' && o.statut === 'valide_manuellement'));
+      let list = filtre === 'tous' ? [...operations] : operations.filter(o => o.statut === filtre || (filtre === 'pointe_auto' && o.statut === 'valide_manuellement'));
+
+      // Tri
+      const sortFns = {
+        date:   (a,b) => (a.date||'').localeCompare(b.date||''),
+        credit: (a,b) => (a.credit||0) - (b.credit||0),
+        debit:  (a,b) => (a.debit||0)  - (b.debit||0),
+      };
+      const fn = sortFns[_opsSortCol] || sortFns.date;
+      list.sort((a,b) => _opsSortDir === 'asc' ? fn(a,b) : fn(b,a));
+
+      // Mise à jour flèches
+      ['date','credit','debit'].forEach(col => {
+        const el = document.getElementById('opsArrow' + col.charAt(0).toUpperCase() + col.slice(1));
+        if (el) el.textContent = _opsSortCol !== col ? '⇅' : (_opsSortDir === 'asc' ? '↑' : '↓');
+        if (el) el.style.color = _opsSortCol === col ? '#cc0000' : '#ccc';
+      });
       const LABELS = { pointe_auto:'✅ Auto', a_valider:'🔵 À valider', non_identifie:'⚠️ Non identifié', valide_manuellement:'✅ Validé' };
       const COLORS = { pointe_auto:'badge-green', a_valider:'', non_identifie:'badge-orange', valide_manuellement:'badge-green' };
 
@@ -946,30 +971,31 @@
       a.download = filename; a.click();
     }
 
-    // ── Référentiel adhérents (généré depuis Excel Bdd_Trésorerie) ──
-    const ADHERENTS_REF = (typeof TREASURY_DATA !== 'undefined'
-      ? TREASURY_DATA.adherents[2026].map(a => ({ noms: [a.nom.toUpperCase(), a.prenom.toUpperCase()] }))
-      : [
-        {noms:['LECADIEU','LUCIE']},{noms:['CROISY','GINO']},{noms:['LANGLET','FREDERIC']},
-        {noms:['DELPLACE','DAVID']},{noms:['BOBER','DEBORAH']},{noms:['ROUSSIN','GWENDOLINE']},
-        {noms:['LEMOINE','MARC-ANTOINE','MARC ANTOINE']},{noms:['KLAWITTER','JULIE']},
-        {noms:['BEGUIN','ALLAN']},{noms:['BONARD','PASCAL']},{noms:['TELLIER','FABRICE']},
-        {noms:['CAUMARTIN','LAURENT']},{noms:['SALVA','NATHALIE']},{noms:['MAQUET','SEBASTIEN']},
-        {noms:['COLAUX','COLAU','PAUL']},{noms:['LEGRAS','JEREMY']},{noms:['DECROIX','PATRICE']},
-        {noms:['CLOLERY','MARC']},{noms:['DHENIN','LUCIEN']},{noms:['CARPENTIER','THOMAS']},
-        {noms:['VAILLANT','MICKAEL','MICHAEL']},{noms:['MARCOTTE','DYLAN']},
-        {noms:['SAKPONOU','CONSTANT']},{noms:['RAY','GUILLAUME']},{noms:['LECONTE','CYRIL']},
-        {noms:['DERCOURT','PHILIPPE']},{noms:['DOGMONT','MARIO']},{noms:['BEAUCOURT','HERVE']},
-        {noms:['TEIXEIRA','OLIVIER']},{noms:['SAUVE','SAUVÉ','JEREMIE']},{noms:['PORTAUX','REMY']},
-        {noms:['ROUILLARD','CHRISTOPHE']},{noms:['MERVILLE','MATHIEU','MATTHIEU']},
-        {noms:['JAMMES','CORENTIN']},{noms:['LEMOINE','ISABELLE']},{noms:['LARIVIERE','GERALD']},
-        {noms:['FONTAINE','JEAN BERNARD']},{noms:['PAUCHET','CEDRIC']},{noms:['PREVOT','ALEXANDRE']},
-        {noms:['BACHA','KARIM']},{noms:['BEAUGEOIS','ANTHONY']},{noms:['RAY','MARC']},
-        {noms:['TRAVERS','JEAN-LUC']},{noms:['BOUYSSOU','PHILIPPE']},
-        {noms:['PORET','AURELIEN']},{noms:['MOREL','FRANCOIS']},{noms:['DEMACHY','AURORE']},
-        {noms:['LOURDEL','BENOIT']},{noms:['DEVAUX','FREDERIC']},
-      ]
-    );
+    // ── Référentiel adhérents pour le matching CSV bancaire ──
+    // CORRECTION : les prénoms vides ("") généraient lib.includes("") = toujours vrai
+    // → on filtre les tokens vides et on utilise un score pour les correspondances multiples
+    function buildAdherentsRef() {
+      if (typeof TREASURY_DATA === 'undefined') return [];
+      return TREASURY_DATA.adherents[2026]
+        .filter(a => a.nom && !a.nom.toLowerCase().includes('conf'))  // exclure membres confidentiels du matching
+        .map(a => {
+          const nom    = a.nom.toUpperCase().replace(/\s+/g,' ').trim();
+          const prenom = (a.prenom||'').toUpperCase().replace(/\s+/g,' ').trim();
+          // Variantes orthographiques fréquentes
+          const variantes = [nom];
+          if (prenom.length >= 3) variantes.push(prenom);
+          // Supprimer accents pour tolérance
+          const sanAccent = s => s.normalize('NFD').replace(/[̀-ͯ]/g,'');
+          if (sanAccent(nom) !== nom)    variantes.push(sanAccent(nom));
+          if (sanAccent(prenom) !== prenom && prenom.length >= 3) variantes.push(sanAccent(prenom));
+          return {
+            display: nom + (prenom ? ' ' + prenom : ''),
+            nom, prenom,
+            tokens: [...new Set(variantes)].filter(n => n.length >= 3)
+          };
+        });
+    }
+    const ADHERENTS_REF = buildAdherentsRef();
 
     // ── Parser CSV local (fallback sans backend) — gère libellés multi-lignes CA ──
     function parseCSVLocal(text) {
@@ -1019,11 +1045,26 @@
         const credit = parseFloat((creditStr||'').replace(/\s/g,'').replace(',','.')) || 0;
 
         if (debit !== 0 || credit !== 0) {
-          const lib = libelle.toUpperCase();
+          const lib = libelle.toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
           let adherent = null;
+          let bestScore = 0;
+
           for (const a of ADHERENTS_REF) {
-            if (a.noms.some(n => lib.includes(n.toUpperCase()))) {
-              adherent = a.noms[0]; break;
+            if (!a.tokens.length) continue;
+            let score = 0;
+            // Score 3 : NOM + PRENOM trouvés ensemble (les deux)
+            if (a.prenom.length >= 3 && a.tokens.includes(a.nom) && a.tokens.includes(a.prenom)) {
+              if (lib.includes(a.nom) && lib.includes(a.prenom)) score = 3;
+            }
+            // Score 2 : NOM seul (suffisamment long pour être spécifique)
+            if (score < 2 && a.nom.length >= 4 && lib.includes(a.nom)) score = 2;
+            // Score 1 : variante NOM ou PRENOM
+            if (score < 1 && a.tokens.some(n => n.length >= 4 && lib.includes(n))) score = 1;
+
+            if (score > bestScore) {
+              bestScore = score;
+              adherent  = a.display;
+              if (score === 3) break; // match parfait, inutile de continuer
             }
           }
           const statut = adherent ? 'pointe_auto' : 'non_identifie';
