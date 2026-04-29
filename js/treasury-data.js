@@ -33,7 +33,8 @@ const TREASURY_DATA = {
         "resteAPayer": -147,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "alex.prevot1@laposte.net"
       },
       {
         "nom": "Membre conf.",
@@ -63,7 +64,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "pdemarsy@gmail.com"
       },
       {
         "nom": "LARIVIERE",
@@ -93,7 +95,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "gege.kristel@free.fr"
       },
       {
         "nom": "LANGLET",
@@ -125,7 +128,8 @@ const TREASURY_DATA = {
         "postesFO": [],
         "postesCSE": [
           "SUP COL1"
-        ]
+        ],
+        "email": "kinane.poc@hotmail.fr"
       },
       {
         "nom": "FONTAINE",
@@ -155,7 +159,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "jb.fontaine68@gmail.com"
       },
       {
         "nom": "DELPLACE",
@@ -187,7 +192,8 @@ const TREASURY_DATA = {
         "postesFO": [],
         "postesCSE": [
           "SUP COL3"
-        ]
+        ],
+        "email": "daviddelplace62@gmail.com"
       },
       {
         "nom": "BOBER",
@@ -217,7 +223,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "deborahbober1@gmail.com"
       },
       {
         "nom": "LECADIEU",
@@ -249,7 +256,8 @@ const TREASURY_DATA = {
         "postesFO": [],
         "postesCSE": [
           "SUP COL3"
-        ]
+        ],
+        "email": "lucie.ecadieu@gmail.com"
       },
       {
         "nom": "ROUSSIN",
@@ -281,7 +289,8 @@ const TREASURY_DATA = {
         "postesFO": [],
         "postesCSE": [
           "TIT COL3"
-        ]
+        ],
+        "email": "gwendolineroussin@gmail.com"
       },
       {
         "nom": "LEMOINE",
@@ -311,7 +320,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "lemoine.marc.antoine.fo@gmail.com"
       },
       {
         "nom": "KLAWITTER",
@@ -343,7 +353,8 @@ const TREASURY_DATA = {
         "postesFO": [],
         "postesCSE": [
           "TIT COL1"
-        ]
+        ],
+        "email": "blancard80@hotmail.com"
       },
       {
         "nom": "BEGUIN",
@@ -375,7 +386,8 @@ const TREASURY_DATA = {
         "postesFO": [],
         "postesCSE": [
           "SUP COL1"
-        ]
+        ],
+        "email": "allan.bgn80@outlook.fr"
       },
       {
         "nom": "BONARD",
@@ -405,7 +417,8 @@ const TREASURY_DATA = {
         "resteAPayer": 41.5,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "fredben.bonard@hotmail.fr"
       },
       {
         "nom": "TELLIER",
@@ -435,7 +448,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "fabricetellier7@gmail.com"
       },
       {
         "nom": "Membre conf.",
@@ -465,7 +479,8 @@ const TREASURY_DATA = {
         "resteAPayer": 54,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "caumartinlaurent@gmail.com"
       },
       {
         "nom": "RIVILLON",
@@ -495,7 +510,8 @@ const TREASURY_DATA = {
         "resteAPayer": 110.5,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "lucie.rivillon@outlook.fr"
       },
       {
         "nom": "SALVA",
@@ -527,7 +543,8 @@ const TREASURY_DATA = {
         "postesFO": [],
         "postesCSE": [
           "TIT COL2"
-        ]
+        ],
+        "email": "nathalie.salva@free.fr"
       },
       {
         "nom": "MAQUET",
@@ -557,7 +574,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "seb.mqt@icloud.com"
       },
       {
         "nom": "COLAUX",
@@ -589,7 +607,8 @@ const TREASURY_DATA = {
         "postesFO": [],
         "postesCSE": [
           "SUP COL3"
-        ]
+        ],
+        "email": "chticard.phc@gmail.com"
       },
       {
         "nom": "LEGRAS",
@@ -619,7 +638,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "Mail le 13/01/2025",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "jeremyleg2@outlook.fr"
       },
       {
         "nom": "DECROIX",
@@ -649,7 +669,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "1 mois offert 2024 (trop perçu 2023)",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "decroix.patrice3@gmail.com"
       },
       {
         "nom": "CLOLERY",
@@ -679,7 +700,8 @@ const TREASURY_DATA = {
         "resteAPayer": 7,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "louis.clolery@orange.fr"
       },
       {
         "nom": "DHENIN",
@@ -709,7 +731,8 @@ const TREASURY_DATA = {
         "resteAPayer": 7,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "lucien80080@hotmail.fr"
       },
       {
         "nom": "CARPENTIER",
@@ -739,7 +762,8 @@ const TREASURY_DATA = {
         "resteAPayer": 7,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "carpentierthomas27@yahoo.fr"
       },
       {
         "nom": "VAILLANT",
@@ -769,7 +793,8 @@ const TREASURY_DATA = {
         "resteAPayer": 7,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "mvaillant0106@gmail.com"
       },
       {
         "nom": "DEMACHY",
@@ -799,7 +824,8 @@ const TREASURY_DATA = {
         "resteAPayer": 53.5,
         "commentaire": "SMS le 13/01/2025",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "aurore.demachy@hotmail.fr"
       },
       {
         "nom": "MARCOTTE",
@@ -829,7 +855,8 @@ const TREASURY_DATA = {
         "resteAPayer": 10.5,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "dylan.marcotte27@gmail.com"
       },
       {
         "nom": "DIEUDONNE",
@@ -859,7 +886,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "isadieudonne80@icloud.com"
       },
       {
         "nom": "FERNANDES",
@@ -889,7 +917,8 @@ const TREASURY_DATA = {
         "resteAPayer": 145,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "david.fds47@gmail.com"
       },
       {
         "nom": "PRINGARBE",
@@ -919,7 +948,8 @@ const TREASURY_DATA = {
         "resteAPayer": 145,
         "commentaire": "A éclaircir mail le 13/01/2025",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "seb-p.msn@hotmail.fr"
       },
       {
         "nom": "BRUVIER",
@@ -949,7 +979,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "Ludovic.bruvier@valeo.com"
       },
       {
         "nom": "PECOURT",
@@ -979,7 +1010,8 @@ const TREASURY_DATA = {
         "resteAPayer": 133.5,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "aline.blin15@yahoo.fr"
       },
       {
         "nom": "RAY",
@@ -1009,7 +1041,8 @@ const TREASURY_DATA = {
         "resteAPayer": 69,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "mafrray@gmail.com"
       },
       {
         "nom": "SAKPONOU",
@@ -1039,7 +1072,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "consty1999@yahoo.fr"
       },
       {
         "nom": "RAY",
@@ -1069,7 +1103,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "guillaumeray13@gmail.com"
       },
       {
         "nom": "LECONTE",
@@ -1099,7 +1134,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "cyril.leconte80000@gmail.com"
       },
       {
         "nom": "DERCOURT",
@@ -1131,7 +1167,8 @@ const TREASURY_DATA = {
         "postesFO": [],
         "postesCSE": [
           "SUP COL2"
-        ]
+        ],
+        "email": "philippedercourt@orange.fr"
       },
       {
         "nom": "DOGMONT",
@@ -1161,7 +1198,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "dogmontmario@gmail.com"
       },
       {
         "nom": "BEAUCOURT",
@@ -1191,7 +1229,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "herve.beaucourt@orange.fr"
       },
       {
         "nom": "TEIXEIRA",
@@ -1221,7 +1260,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "olivier.teixeira@valeo.com"
       },
       {
         "nom": "SAUVE",
@@ -1251,7 +1291,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "jeremie.sauve@hotmail.fr"
       },
       {
         "nom": "PORET",
@@ -1281,7 +1322,8 @@ const TREASURY_DATA = {
         "resteAPayer": 25,
         "commentaire": "Virement à faire le 13/01/2025",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "aureliennn@hotmail.fr"
       },
       {
         "nom": "MOREL",
@@ -1311,7 +1353,8 @@ const TREASURY_DATA = {
         "resteAPayer": 145,
         "commentaire": "Mail le 13/01/2025",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "francois.morel710@gmail.com"
       },
       {
         "nom": "BEAUGEOIS",
@@ -1343,7 +1386,8 @@ const TREASURY_DATA = {
         "postesFO": [],
         "postesCSE": [
           "TIT COL1"
-        ]
+        ],
+        "email": "beaugeoisanthony@hotmail.fr"
       },
       {
         "nom": "BACHA",
@@ -1373,7 +1417,8 @@ const TREASURY_DATA = {
         "resteAPayer": 30,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "bachakarim80260@gmail.com"
       },
       {
         "nom": "VAAST",
@@ -1403,7 +1448,8 @@ const TREASURY_DATA = {
         "resteAPayer": 21.5,
         "commentaire": "SMS le 13/01/2025",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "fabrice.vaast@gmail.com"
       },
       {
         "nom": "PORTAUX",
@@ -1433,7 +1479,8 @@ const TREASURY_DATA = {
         "resteAPayer": 7,
         "commentaire": "// Gwen",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "remy.portaux@valeo.com"
       },
       {
         "nom": "AMET",
@@ -1463,7 +1510,8 @@ const TREASURY_DATA = {
         "resteAPayer": 145,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "amet.benoit@gmail.com"
       },
       {
         "nom": "LUCET",
@@ -1493,7 +1541,8 @@ const TREASURY_DATA = {
         "resteAPayer": 145,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "david.lucet.fom@gmail.com"
       },
       {
         "nom": "FOLLAIN",
@@ -1523,7 +1572,8 @@ const TREASURY_DATA = {
         "resteAPayer": 145,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "franck.follain@wanadoo.fr"
       },
       {
         "nom": "LOURDEL",
@@ -1553,7 +1603,8 @@ const TREASURY_DATA = {
         "resteAPayer": 145,
         "commentaire": "DON 2024 50cts",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "b.lourdel@orange.fr"
       },
       {
         "nom": "DEGOUY",
@@ -1583,7 +1634,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "audriedegouy@orange.fr"
       },
       {
         "nom": "LENNE",
@@ -1613,7 +1665,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "jean-luc.lenne@wanadoo.fr"
       },
       {
         "nom": "RASET",
@@ -1643,7 +1696,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "adel.gab@orange.fr"
       },
       {
         "nom": "BULANT",
@@ -1673,7 +1727,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "fabrice.bulant@outlook.com"
       },
       {
         "nom": "VALOUR",
@@ -1703,7 +1758,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "thony1991@gmail.com"
       },
       {
         "nom": "DEBUIGNY",
@@ -1733,7 +1789,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "elisabethdebuigny@yahoo.com"
       },
       {
         "nom": "DAVID",
@@ -1763,7 +1820,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "dd.dumeige@laposte.net"
       },
       {
         "nom": "SOUILLARD",
@@ -1793,7 +1851,8 @@ const TREASURY_DATA = {
         "resteAPayer": 145,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "micka.80@live.fr"
       },
       {
         "nom": "DUPONT",
@@ -1823,7 +1882,8 @@ const TREASURY_DATA = {
         "resteAPayer": 145,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "dupont.vincent12@aliceadsl.fr"
       },
       {
         "nom": "DEVAUX",
@@ -1853,7 +1913,8 @@ const TREASURY_DATA = {
         "resteAPayer": 122,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "wazoo.80@hotmail.fr"
       },
       {
         "nom": "TRAVERS",
@@ -1883,7 +1944,8 @@ const TREASURY_DATA = {
         "resteAPayer": 103.5,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "jl.travers@laposte.net"
       },
       {
         "nom": "BOUYSSOU",
@@ -1913,7 +1975,8 @@ const TREASURY_DATA = {
         "resteAPayer": -41.5,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "philippe.bouyssou2@orange.fr"
       },
       {
         "nom": "Membre conf.",
@@ -1943,7 +2006,8 @@ const TREASURY_DATA = {
         "resteAPayer": 69,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "pdemarsy@gmail.com"
       },
       {
         "nom": "PAUCHET",
@@ -1973,7 +2037,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "pauchetcedric@gmail.com"
       },
       {
         "nom": "CROISY",
@@ -2005,7 +2070,8 @@ const TREASURY_DATA = {
         "postesFO": [],
         "postesCSE": [
           "TIT COL2"
-        ]
+        ],
+        "email": "gino.croisy@gmail.com"
       }
     ],
     "2026": [
@@ -2037,7 +2103,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "pdemarsy@gmail.com"
       },
       {
         "nom": "LECADIEU",
@@ -2069,7 +2136,8 @@ const TREASURY_DATA = {
         "postesFO": [],
         "postesCSE": [
           "SUP COL3"
-        ]
+        ],
+        "email": "lucie.ecadieu@gmail.com"
       },
       {
         "nom": "DIEUDONNE",
@@ -2099,7 +2167,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "isadieudonne80@icloud.com"
       },
       {
         "nom": "FERNANDES",
@@ -2129,7 +2198,8 @@ const TREASURY_DATA = {
         "resteAPayer": 145,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "david.fds47@gmail.com"
       },
       {
         "nom": "PRINGARBE",
@@ -2159,7 +2229,8 @@ const TREASURY_DATA = {
         "resteAPayer": 145,
         "commentaire": "A éclaircir mail le 13/01/2025",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "seb-p.msn@hotmail.fr"
       },
       {
         "nom": "BRUVIER",
@@ -2189,7 +2260,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "Ludovic.bruvier@valeo.com"
       },
       {
         "nom": "PECOURT",
@@ -2219,7 +2291,8 @@ const TREASURY_DATA = {
         "resteAPayer": 133.5,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "aline.blin15@yahoo.fr"
       },
       {
         "nom": "RAY",
@@ -2249,7 +2322,8 @@ const TREASURY_DATA = {
         "resteAPayer": 69,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "mafrray@gmail.com"
       },
       {
         "nom": "BEAUGEOIS",
@@ -2281,7 +2355,8 @@ const TREASURY_DATA = {
         "postesFO": [],
         "postesCSE": [
           "TIT COL1"
-        ]
+        ],
+        "email": "beaugeoisanthony@hotmail.fr"
       },
       {
         "nom": "BACHA",
@@ -2311,7 +2386,8 @@ const TREASURY_DATA = {
         "resteAPayer": 30,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "bachakarim80260@gmail.com"
       },
       {
         "nom": "VAAST",
@@ -2341,7 +2417,8 @@ const TREASURY_DATA = {
         "resteAPayer": 21.5,
         "commentaire": "SMS le 13/01/2025",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "fabrice.vaast@gmail.com"
       },
       {
         "nom": "AMET",
@@ -2371,7 +2448,8 @@ const TREASURY_DATA = {
         "resteAPayer": 145,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "amet.benoit@gmail.com"
       },
       {
         "nom": "LUCET",
@@ -2401,7 +2479,8 @@ const TREASURY_DATA = {
         "resteAPayer": 145,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "david.lucet.fom@gmail.com"
       },
       {
         "nom": "FOLLAIN",
@@ -2431,7 +2510,8 @@ const TREASURY_DATA = {
         "resteAPayer": 145,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "franck.follain@wanadoo.fr"
       },
       {
         "nom": "LOURDEL",
@@ -2461,7 +2541,8 @@ const TREASURY_DATA = {
         "resteAPayer": 145,
         "commentaire": "DON 2024 50cts",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "b.lourdel@orange.fr"
       },
       {
         "nom": "DEGOUY",
@@ -2491,7 +2572,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "audriedegouy@orange.fr"
       },
       {
         "nom": "LENNE",
@@ -2521,7 +2603,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "jean-luc.lenne@wanadoo.fr"
       },
       {
         "nom": "RASET",
@@ -2551,7 +2634,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "adel.gab@orange.fr"
       },
       {
         "nom": "BULANT",
@@ -2581,7 +2665,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "fabrice.bulant@outlook.com"
       },
       {
         "nom": "VALOUR",
@@ -2611,7 +2696,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "thony1991@gmail.com"
       },
       {
         "nom": "DEBUIGNY",
@@ -2641,7 +2727,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "elisabethdebuigny@yahoo.com"
       },
       {
         "nom": "DAVID",
@@ -2671,7 +2758,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "dd.dumeige@laposte.net"
       },
       {
         "nom": "SOUILLARD",
@@ -2701,7 +2789,8 @@ const TREASURY_DATA = {
         "resteAPayer": 145,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "micka.80@live.fr"
       },
       {
         "nom": "DUPONT",
@@ -2731,7 +2820,8 @@ const TREASURY_DATA = {
         "resteAPayer": 145,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "dupont.vincent12@aliceadsl.fr"
       },
       {
         "nom": "DEVAUX",
@@ -2761,7 +2851,8 @@ const TREASURY_DATA = {
         "resteAPayer": 122,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "wazoo.80@hotmail.fr"
       },
       {
         "nom": "TRAVERS",
@@ -2791,7 +2882,8 @@ const TREASURY_DATA = {
         "resteAPayer": 103.5,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "jl.travers@laposte.net"
       },
       {
         "nom": "BOUYSSOU",
@@ -2821,7 +2913,8 @@ const TREASURY_DATA = {
         "resteAPayer": -41.5,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "philippe.bouyssou2@orange.fr"
       },
       {
         "nom": "Membre conf.",
@@ -2851,7 +2944,8 @@ const TREASURY_DATA = {
         "resteAPayer": 69,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "pdemarsy@gmail.com"
       },
       {
         "nom": "PAUCHET",
@@ -2881,7 +2975,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "pauchetcedric@gmail.com"
       },
       {
         "nom": "CROISY",
@@ -2913,7 +3008,8 @@ const TREASURY_DATA = {
         "postesFO": [],
         "postesCSE": [
           "TIT COL2"
-        ]
+        ],
+        "email": "gino.croisy@gmail.com"
       },
       {
         "nom": "PREVOT",
@@ -2943,7 +3039,8 @@ const TREASURY_DATA = {
         "resteAPayer": -147,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "alex.prevot1@laposte.net"
       },
       {
         "nom": "LARIVIERE",
@@ -2973,7 +3070,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "gege.kristel@free.fr"
       },
       {
         "nom": "LANGLET",
@@ -3005,7 +3103,8 @@ const TREASURY_DATA = {
         "postesFO": [],
         "postesCSE": [
           "SUP COL1"
-        ]
+        ],
+        "email": "kinane.poc@hotmail.fr"
       },
       {
         "nom": "FONTAINE",
@@ -3035,7 +3134,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "jb.fontaine68@gmail.com"
       },
       {
         "nom": "DELPLACE",
@@ -3067,7 +3167,8 @@ const TREASURY_DATA = {
         "postesFO": [],
         "postesCSE": [
           "SUP COL3"
-        ]
+        ],
+        "email": "daviddelplace62@gmail.com"
       },
       {
         "nom": "BOBER",
@@ -3097,7 +3198,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "deborahbober1@gmail.com"
       },
       {
         "nom": "ROUSSIN",
@@ -3129,7 +3231,8 @@ const TREASURY_DATA = {
         "postesFO": [],
         "postesCSE": [
           "TIT COL3"
-        ]
+        ],
+        "email": "gwendolineroussin@gmail.com"
       },
       {
         "nom": "LEMOINE",
@@ -3159,7 +3262,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "lemoine.marc.antoine.fo@gmail.com"
       },
       {
         "nom": "KLAWITTER",
@@ -3191,7 +3295,8 @@ const TREASURY_DATA = {
         "postesFO": [],
         "postesCSE": [
           "TIT COL1"
-        ]
+        ],
+        "email": "blancard80@hotmail.com"
       },
       {
         "nom": "BEGUIN",
@@ -3223,7 +3328,8 @@ const TREASURY_DATA = {
         "postesFO": [],
         "postesCSE": [
           "SUP COL1"
-        ]
+        ],
+        "email": "allan.bgn80@outlook.fr"
       },
       {
         "nom": "BONARD",
@@ -3253,7 +3359,8 @@ const TREASURY_DATA = {
         "resteAPayer": 41.5,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "fredben.bonard@hotmail.fr"
       },
       {
         "nom": "TELLIER",
@@ -3283,7 +3390,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "fabricetellier7@gmail.com"
       },
       {
         "nom": "Membre conf.",
@@ -3313,7 +3421,8 @@ const TREASURY_DATA = {
         "resteAPayer": 54,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "caumartinlaurent@gmail.com"
       },
       {
         "nom": "RIVILLON",
@@ -3343,7 +3452,8 @@ const TREASURY_DATA = {
         "resteAPayer": 110.5,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "lucie.rivillon@outlook.fr"
       },
       {
         "nom": "SALVA",
@@ -3375,7 +3485,8 @@ const TREASURY_DATA = {
         "postesFO": [],
         "postesCSE": [
           "TIT COL2"
-        ]
+        ],
+        "email": "nathalie.salva@free.fr"
       },
       {
         "nom": "MAQUET",
@@ -3405,7 +3516,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "seb.mqt@icloud.com"
       },
       {
         "nom": "COLAUX",
@@ -3437,7 +3549,8 @@ const TREASURY_DATA = {
         "postesFO": [],
         "postesCSE": [
           "SUP COL3"
-        ]
+        ],
+        "email": "chticard.phc@gmail.com"
       },
       {
         "nom": "LEGRAS",
@@ -3467,7 +3580,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "Mail le 13/01/2025",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "jeremyleg2@outlook.fr"
       },
       {
         "nom": "DECROIX",
@@ -3497,7 +3611,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "1 mois offert 2024 (trop perçu 2023)",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "decroix.patrice3@gmail.com"
       },
       {
         "nom": "CLOLERY",
@@ -3527,7 +3642,8 @@ const TREASURY_DATA = {
         "resteAPayer": 7,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "louis.clolery@orange.fr"
       },
       {
         "nom": "DHENIN",
@@ -3557,7 +3673,8 @@ const TREASURY_DATA = {
         "resteAPayer": 7,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "lucien80080@hotmail.fr"
       },
       {
         "nom": "CARPENTIER",
@@ -3587,7 +3704,8 @@ const TREASURY_DATA = {
         "resteAPayer": 7,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "carpentierthomas27@yahoo.fr"
       },
       {
         "nom": "VAILLANT",
@@ -3617,7 +3735,8 @@ const TREASURY_DATA = {
         "resteAPayer": 7,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "mvaillant0106@gmail.com"
       },
       {
         "nom": "DEMACHY",
@@ -3647,7 +3766,8 @@ const TREASURY_DATA = {
         "resteAPayer": 53.5,
         "commentaire": "SMS le 13/01/2025",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "aurore.demachy@hotmail.fr"
       },
       {
         "nom": "MARCOTTE",
@@ -3677,7 +3797,8 @@ const TREASURY_DATA = {
         "resteAPayer": 10.5,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "dylan.marcotte27@gmail.com"
       },
       {
         "nom": "SAKPONOU",
@@ -3707,7 +3828,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "consty1999@yahoo.fr"
       },
       {
         "nom": "RAY",
@@ -3737,7 +3859,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "guillaumeray13@gmail.com"
       },
       {
         "nom": "LECONTE",
@@ -3767,7 +3890,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "cyril.leconte80000@gmail.com"
       },
       {
         "nom": "DERCOURT",
@@ -3799,7 +3923,8 @@ const TREASURY_DATA = {
         "postesFO": [],
         "postesCSE": [
           "SUP COL2"
-        ]
+        ],
+        "email": "philippedercourt@orange.fr"
       },
       {
         "nom": "DOGMONT",
@@ -3829,7 +3954,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "dogmontmario@gmail.com"
       },
       {
         "nom": "BEAUCOURT",
@@ -3859,7 +3985,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "herve.beaucourt@orange.fr"
       },
       {
         "nom": "TEIXEIRA",
@@ -3889,7 +4016,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "olivier.teixeira@valeo.com"
       },
       {
         "nom": "SAUVE",
@@ -3919,7 +4047,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "jeremie.sauve@hotmail.fr"
       },
       {
         "nom": "PORET",
@@ -3949,7 +4078,8 @@ const TREASURY_DATA = {
         "resteAPayer": 25,
         "commentaire": "Virement à faire le 13/01/2025",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "aureliennn@hotmail.fr"
       },
       {
         "nom": "MOREL",
@@ -3979,7 +4109,8 @@ const TREASURY_DATA = {
         "resteAPayer": 145,
         "commentaire": "Mail le 13/01/2025",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "francois.morel710@gmail.com"
       },
       {
         "nom": "PORTAUX",
@@ -4009,7 +4140,8 @@ const TREASURY_DATA = {
         "resteAPayer": 7,
         "commentaire": "// Gwen",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "remy.portaux@valeo.com"
       },
       {
         "nom": "ROUILLARD",
@@ -4039,7 +4171,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "super.marseillais@live.fr"
       },
       {
         "nom": "MERVILLE",
@@ -4069,7 +4202,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "merville.matthieu@orange.fr"
       },
       {
         "nom": "JAMMES",
@@ -4099,7 +4233,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "corentin.jammes@valeo.com"
       },
       {
         "nom": "LEMOINE",
@@ -4129,7 +4264,8 @@ const TREASURY_DATA = {
         "resteAPayer": 0,
         "commentaire": "",
         "postesFO": [],
-        "postesCSE": []
+        "postesCSE": [],
+        "email": "lemoineisabelle@yahoo.fr"
       }
     ]
   },
