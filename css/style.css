@@ -1057,3 +1057,68 @@ tr:hover td { background: #fafafa; }
   .social-compact-card .scc-body { padding: 12px; }
   .structure-body   { padding: 12px 14px; }
 }
+
+/* ═══════════════════════════════════════════
+   COMPACT MOBILE — homepage (smartphone)
+   Réduit la longueur de scroll sans perdre
+   d'information : les détails sont masqués
+   mais restent présents dans le DOM.
+═══════════════════════════════════════════ */
+@media (max-width: 768px) {
+  /* ── Espacement global ── */
+  .section               { padding: 22px 0; }
+  .section-desc          { display: none; }      /* intro redondante sous le titre */
+  .section-title         { margin-bottom: 14px; }
+
+  /* ── Hero plus compact ── */
+  .hero                  { min-height: 220px; padding: 50px 16px 26px; }
+  .hero-content h1       { font-size: 1.35rem; margin-bottom: 8px; }
+  .hero-content p        { font-size: .84rem;  margin-bottom: 14px; }
+  .hero-cta .btn         { padding: 9px 18px;  font-size: .86rem; }
+
+  /* ── Flash Info ── */
+  .flash-ticker          { height: 34px; }
+  .flash-ticker-label    { font-size: .72rem; padding: 0 10px; }
+  .flash-card            { padding: 10px 13px; gap: 5px; }
+  .flash-text            { display: none; }      /* corps de texte masqué, titre suffit */
+  .flash-footer          { padding-top: 5px; margin-top: 3px; }
+
+  /* ── Actualités ── */
+  .actu-card-thumb img   { height: 110px; }
+
+  /* ── Planning ── */
+  .plan-card             { padding: 10px 13px; gap: 5px; }
+  .plan-desc             { display: none; }      /* description cachée, titre + heure restent */
+  .plan-footer           { padding-top: 5px; }
+
+  /* ── Réseaux sociaux ── */
+  .social-live-feed      { max-height: 140px !important; }
+  .scc-body > p          { display: none; }      /* texte d'intro Facebook/X masqué */
+
+  /* ── Structures (UD FO + Fédération) ── */
+  .structure-sub         { display: none; }      /* sous-titre répétitif */
+  .structure-tags        { display: none; }      /* tags, info non critique */
+
+  /* ── Documents ── */
+  .doc-card              { padding: 12px 14px; gap: 10px; }
+  .doc-card p            { font-size: .78rem; margin: 0; }
+
+  /* ── Contact ── */
+  .contact-info          { gap: 10px; }
+  .contact-item          { font-size: .86rem; }
+
+  /* ── Footer ── */
+  .footer-inner          { gap: 18px; padding: 22px 16px; }
+  .logo-img-footer       { height: 36px; }
+}
+
+@media (max-width: 480px) {
+  .section               { padding: 16px 0; }
+  .hero                  { min-height: 195px; padding: 44px 14px 22px; }
+  .hero-content h1       { font-size: 1.2rem; }
+  .hero-cta              { gap: 8px; }
+  .section-title         { font-size: 1.2rem; margin-bottom: 12px; }
+  .flash-card            { padding: 9px 12px; }
+  .plan-card             { padding: 9px 12px; }
+  .structure-info li     { font-size: .76rem; }
+}
